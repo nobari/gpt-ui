@@ -1,0 +1,19 @@
+//bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+//font-awesome
+// Update Font Awesome font path variable
+$fa-font-path: '@fortawesome/fontawesome-free/webfonts';
+@import '@fortawesome/fontawesome-free/scss/fontawesome';
+@import '@fortawesome/fontawesome-free/scss/solid';
+@import '@fortawesome/fontawesome-free/scss/regular';
+@import '@fortawesome/fontawesome-free/scss/brands';
+
+@import 'highlight.js/scss/github-dark.scss';
+
+@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400&family=Kaushan+Script&display=swap');
+
+table {
+  @extend .table !optional;
+  @extend .table-hover !optional;
+}
