@@ -89,6 +89,9 @@ const ChatBox: FC<ChatBoxProps> = ({
       update({ shaking })
     }, 500)
   }
+  const log = (...msg: any) => {
+    console.log(`chatbox ${index}:`, ...msg)
+  }
   // Assuming getIcon and getRole are utility functions that return corresponding data
   const getRole = (roleString: string) => {
     switch (roleString) {
@@ -112,7 +115,7 @@ const ChatBox: FC<ChatBoxProps> = ({
   }
 
   const update = (aChatBox: Partial<aChatBox>) => {
-    console.log('update chatbox:', aChatBox)
+    log('update chatbox:', aChatBox)
     aChatBox.index = index
     updateChatBox(aChatBox)
   }
@@ -124,7 +127,7 @@ const ChatBox: FC<ChatBoxProps> = ({
     }
   }, [textArea, previewing])
   useEffect(() => {
-    console.log('shaking:', shaking)
+    log('shaking:', shaking)
     if (shaking) {
       previewing = false
       update({ previewing })
@@ -132,7 +135,7 @@ const ChatBox: FC<ChatBoxProps> = ({
   }, [shaking])
   useEffect(() => {
     if (audioUrl && audioRef.current) {
-      console.log('audioUrl:', audioUrl)
+      log('audioUrl:', audioUrl)
       audioRef.current.play()
     }
   }, [audioUrl])
@@ -166,7 +169,7 @@ const ChatBox: FC<ChatBoxProps> = ({
           update({ previewing: false })
         }}
         onClick={() => {
-          console.log('preview click:', previewing, role)
+          log('preview click:', previewing, role)
           if (role == 'assistant') return
           update({ previewing: false })
         }}
@@ -179,28 +182,27 @@ const ChatBox: FC<ChatBoxProps> = ({
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault()
             const text = e.target.value
-            console.log('submit:', text)
+            log('submit:', text)
             e.target.blur()
             update({ text })
             submit()
           }
         }}
         onChange={(e: any) => {
-          console.log('text change:', e.target.value)
+          log('text change:', e.target.value)
           update({ text: e.target.value })
           setAudioUrl(undefined)
         }}
         value={text}
         ref={(textRef) => {
           if (role != 'assistant' && textRef && !previewing) {
-            console.log('text ref:', textRef, previewing)
             textRef.focus()
           }
           if (textRef) setTextArea(textRef)
         }}
         hidden={loading || previewing}
         onBlur={() => {
-          console.log('text blur:', previewing)
+          log('text blur:', previewing)
           update({ previewing: true })
         }}
         className="form-control message-text"
@@ -243,7 +245,7 @@ const ChatBox: FC<ChatBoxProps> = ({
         hidden={!!audioUrl}
         onClick={async (e) => {
           const textToSpeech = text.trim()
-          console.log('text:', textToSpeech)
+          log('text:', textToSpeech)
           // playButton.disabled = true
 
           // Change the icon to a loading icon

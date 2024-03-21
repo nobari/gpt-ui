@@ -61,18 +61,18 @@ function ChatForm() {
         updateChatBox,
         jb
       )
-    } catch (error) {
-      // TODO: fix the following in react
-      // if (targetTextArea)
-      //   targetTextArea.value = 'Error fetching response.\n\n' + error
+    } catch (error: any) {
+      aChatBox.text += `
+      ---
+      Error from openAI response:
+      ${error?.message || error}`
     } finally {
-      // TODO: fix the following in react
-      // utils.removeSpinner()
-      // let lastMessage = apiResponse?.result ? addMessage() : targetTextArea
-      // if (lastMessage) lastMessage.focus()
       aChatBox.loading = false
       updateChatBox(aChatBox)
       setLoading(false)
+      addChatBox({
+        previewing: true //to avoid focusing or opening keyboard
+      })
     }
   }
   const downloadTypes = useMemo(() => {
@@ -181,61 +181,7 @@ function RecordingSection() {
 }
 function AddMessageButton() {
   const { addChatBox } = useChatBox()
-  /*
-  function addChatBox(message = '', setAsAssistant?: boolean) {
-    const systemRole = Generator.roles.system.role
-    const userRole = Generator.roles.user.role
-    const assistantRole = Generator.roles.assistant.role
 
-    let newRole = setAsAssistant ? assistantRole : userRole
-    let lastChatBox: aChatBox,
-      messageInput: HTMLTextAreaElement = undefined as any
-    if (ChatBoxs.length > 0) {
-      lastChatBox = ChatBoxs[ChatBoxs.length - 1]
-      if (typeof setAsAssistant === 'undefined') {
-        const lastRoleType = lastChatBox.role || assistantRole
-        const isUser = lastRoleType === userRole
-        if (typeof setAsAssistant != 'undefined')
-          newRole = isUser ? assistantRole : userRole
-      }
-      if (lastChatBox.text.length == 0) {
-        console.log('editing last message')
-        lastChatBox.text = message
-        updateChatBox(ChatBoxs.length - 1, lastChatBox)
-        const preview = setPreviewDiv(messageInput)
-        if (newRole == userRole) showTextArea(preview, messageInput)
-        return messageInput
-      }
-    }
-
-    // add message here
-
-    const drawContainer = document.createElement('div')
-    drawContainer.className = 'input-group draw-container'
-
-    const drawings = document.createElement('div')
-    drawings.className = 'drawings row'
-    drawContainer.append(drawings)
-    for (const type of ['m', 'd']) {
-      const drawBtn = document.createElement('button')
-      drawBtn.type = 'button'
-      drawBtn.className = 'btn form-button draw-btn btn-dark'
-      drawBtn.title = 'Draw a pic'
-      drawBtn.dataset.type = type
-      drawBtn.innerText = type == 'm' ? 'Draw 🎇 M' : 'Draw 🌠 D'
-      drawContainer.append(drawBtn)
-      drawButtonEventListener(drawBtn)
-    }
-    inputGroup.append(drawContainer)
-
-    messageInput.value = message
-    messagesContainer.append(inputGroup)
-    messageInput.dispatchEvent(new Event('input', { bubbles: true }))
-    const preview = setPreviewDiv(messageInput)
-    if (newRole == userRole) showTextArea(preview, messageInput)
-    return messageInput
-  }
-*/
   return (
     <div class="mb-3 p-0">
       <button

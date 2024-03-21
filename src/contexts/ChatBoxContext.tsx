@@ -29,7 +29,7 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
   const [chatBoxs, setChatBoxs] = useState<aChatBox[]>([initialChatBox])
 
   const addChatBox = (newChatBox?: Partial<aChatBox>) => {
-    console.log('newChatBox', newChatBox)
+    console.log(`addChatBox ${chatBoxs.length}:`, newChatBox)
     if ((!newChatBox || newChatBox.role === 'user') && chatBoxs.length > 0) {
       const lastChatBox = chatBoxs[chatBoxs.length - 1]
       if (lastChatBox.role === 'user' && !lastChatBox.text) {
@@ -48,14 +48,23 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
         return
       }
     }
-    newChatBox = {
-      index: chatBoxs.length,
+    const chatBoxToAdd = {
       text: '',
       role: 'user',
       ...newChatBox
-    }
-    setChatBoxs((prevChatBox) => [...prevChatBox, newChatBox as aChatBox])
-    return newChatBox as aChatBox
+    } as aChatBox
+    setChatBoxs((prevChatBox) => {
+      if (!chatBoxToAdd.index) chatBoxToAdd.index = prevChatBox.length
+      const _chatboxs = [...prevChatBox, chatBoxToAdd]
+      console.log(
+        'addChatBox: prevChatBox:',
+        prevChatBox,
+        'chatboxes:',
+        _chatboxs
+      )
+      return _chatboxs
+    })
+    return chatBoxToAdd
   }
   const updateChatBox = (newChatBox: Partial<aChatBox>) => {
     setChatBoxs((prevChatBoxs) => {
@@ -65,6 +74,10 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
     })
   }
   const deleteChatBox = (index: number) => {
+    if (chatBoxs.length === 1) {
+      window.alert(`Please don't delete the last chat box`)
+      return
+    }
     setChatBoxs((prevChatBox) => {
       const newChatBoxs = [...prevChatBox]
       newChatBoxs.splice(index, 1)
