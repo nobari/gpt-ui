@@ -20,6 +20,15 @@ function ChatForm() {
   const [jb, setJB] = useState(false)
   const [loading, setLoading] = useState<boolean>()
   const [systemText, setSystemText] = useState<string>()
+
+  const addNewPassiveChatBox = () => {
+    console.log(chatBoxs)
+    if (chatBoxs[chatBoxs.length - 1].role == 'assistant') {
+      addChatBox({
+        previewing: true //to avoid focusing or opening keyboard
+      })
+    }
+  }
   const handleSubmit = async (e?: any) => {
     if (e) e.preventDefault()
     console.log('submit:', chatBoxs)
@@ -70,9 +79,7 @@ function ChatForm() {
       aChatBox.loading = false
       updateChatBox(aChatBox)
       setLoading(false)
-      addChatBox({
-        previewing: true //to avoid focusing or opening keyboard
-      })
+      addNewPassiveChatBox()
     }
   }
   const downloadTypes = useMemo(() => {
@@ -193,7 +200,7 @@ function AddMessageButton() {
           addChatBox()
         }}
       >
-        + Add message
+        <span className="fas fa-plus" /> Add message
       </button>
     </div>
   )

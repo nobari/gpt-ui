@@ -11,10 +11,12 @@ const JBButton: React.FC<JBButtonProps> = ({ onChange }) => {
   }
 
   return (
-    <>
-      <input type="checkbox" id="jbCheck" onChange={handleChange} />
-      <label htmlFor="jbCheck">JB</label>
-    </>
+    <div className="form-check d-flex align-items-center">
+      <input className="form-check-input" type="checkbox" id="jbCheck" onChange={handleChange} />
+      <label className="form-check-label mx-2" htmlFor="jbCheck">
+        JB
+      </label>
+    </div>
   )
 }
 

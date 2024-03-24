@@ -55,14 +55,14 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
     } as aChatBox
     setChatBoxs((prevChatBox) => {
       if (!chatBoxToAdd.index) chatBoxToAdd.index = prevChatBox.length
-      const _chatboxs = [...prevChatBox, chatBoxToAdd]
+      chatBoxs.push(chatBoxToAdd)
       console.log(
         'addChatBox: prevChatBox:',
         prevChatBox,
         'chatboxes:',
-        _chatboxs
+        chatBoxs
       )
-      return _chatboxs
+      return chatBoxs
     })
     return chatBoxToAdd
   }
@@ -81,6 +81,9 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
     setChatBoxs((prevChatBox) => {
       const newChatBoxs = [...prevChatBox]
       newChatBoxs.splice(index, 1)
+      for (let i = index; i < newChatBoxs.length; i++) {
+        newChatBoxs[i].index = i
+      }
       return newChatBoxs
     })
   }

@@ -92,27 +92,11 @@ const ChatBox: FC<ChatBoxProps> = ({
   const log = (...msg: any) => {
     console.log(`chatbox ${index}:`, ...msg)
   }
-  // Assuming getIcon and getRole are utility functions that return corresponding data
-  const getRole = (roleString: string) => {
-    switch (roleString) {
-      case systemRole:
-        return Generator.roles.system
-      case userRole:
-        return Generator.roles.user
-      case assistantRole:
-        return Generator.roles.assistant
-      default:
-        return new payloadRole('?', '❔', '?', 'Unknown role')
-    }
-  }
+
   const placeholder = useMemo(() => {
     if (loading && role == 'assistant') return 'Fetching response...'
     return getPlaceholder(setAsAssistant, role)
   }, [setAsAssistant, role, loading])
-
-  const getIcon = (role: string) => {
-    return getRole(role).icon
-  }
 
   const update = (aChatBox: Partial<aChatBox>) => {
     log('update chatbox:', aChatBox)
@@ -158,7 +142,11 @@ const ChatBox: FC<ChatBoxProps> = ({
           update({ role: newRole })
         }}
       >
-        {getIcon(role)}{' '}
+        <span
+          className={`fas ${
+            role == 'assistant' ? 'fa-wand-magic-sparkles' : 'fa-user-pen'
+          }`}
+        />
       </button>
 
       <ChatBoxPreview
@@ -215,13 +203,13 @@ const ChatBox: FC<ChatBoxProps> = ({
         // You might handle events directly, e.g., onChange, onFocus etc.
       />
       <button
-        className="btn btn-outline-secondary message-delete form-button"
+        className="btn btn-outline-danger message-delete form-button"
         type="button"
         title="Delete Message"
         tabIndex={-1}
-        onClick={() => deleteChatBox(index)} // Define the event listener function
+        onClick={() => deleteChatBox(index)}
       >
-        {String.fromCharCode(0x274c)}
+        <span className="fas fa-trash" />
       </button>
 
       <button

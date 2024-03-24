@@ -39,13 +39,9 @@ function ensureApiKey() {
 }
 export class payloadRole {
   role: string
-  icon: string
-  short: string
   placeholder: string
-  constructor(role: string, icon: string, short: string, placeholder: string) {
+  constructor(role: string, placeholder: string) {
     this.role = role
-    this.icon = icon
-    this.short = short
     this.placeholder = placeholder
   }
 }
@@ -63,14 +59,9 @@ export class Generator {
   temperature = 1
   endPoint: string = 'https://api.openai.com/v1/chat/completions'
   static roles = {
-    system: new payloadRole('system', '🧠', 'sys', ''),
-    user: new payloadRole('user', '👤', 'usr', 'Enter a user message here.'),
-    assistant: new payloadRole(
-      'assistant',
-      '🤖',
-      'ast',
-      'Enter an assistant message here.'
-    )
+    system: new payloadRole('system', ''),
+    user: new payloadRole('user', 'Enter a user message here.'),
+    assistant: new payloadRole('assistant', 'Enter an assistant message here.')
   }
   openai: OpenAI
   stream: ChatCompletionStream | undefined
