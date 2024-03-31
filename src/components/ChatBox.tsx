@@ -7,6 +7,7 @@ import { copyTextToClipboard, getPreviewHtml } from '../utils/utils'
 import hljs from 'highlight.js'
 import { chatgpt } from '../app'
 import DrawContainer from './DrawContainer'
+import TextareaAutosize from 'react-textarea-autosize'
 
 interface ChatBoxProps extends aChatBox {
   setAsAssistant?: boolean
@@ -40,10 +41,9 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
   ...props
 }) => {
   const parsed = useMemo(() => {
-    console.log('preview text:', text)
     const trimmedText = text?.trim()
     if (!trimmedText) return
-    const parsedMarkdown = getPreviewHtml(trimmedText) as string
+    const parsedMarkdown = getPreviewHtml(text!) as string // to include break lines
 
     return `<div>${highlightPreCode(parsedMarkdown)}</div>`
   }, [text])
@@ -76,7 +76,7 @@ const ChatBox: FC<ChatBoxProps> = ({
   submit
 }) => {
   const [audioUrl, setAudioUrl] = useState<string>()
-  const [textArea, setTextArea] = useState<HTMLTextAreaElement>()
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const { deleteChatBox, updateChatBox } = useChatBox()
   const systemRole = Generator.roles.system.role
   const userRole = Generator.roles.user.role
@@ -104,12 +104,12 @@ const ChatBox: FC<ChatBoxProps> = ({
     updateChatBox(aChatBox)
   }
 
-  useEffect(() => {
-    if (textArea && !previewing) {
-      textArea.focus()
-      resize(textArea)
-    }
-  }, [textArea, previewing])
+  // useEffect(() => {
+  //   if (textAreaRef.current && !previewing) {
+  //     textAreaRef.current.focus({ preventScroll: true })
+  //     // resize(textAreaRef.current)
+  //   }
+  // }, [textAreaRef, previewing])
   useEffect(() => {
     log('shaking:', shaking)
     if (shaking) {
@@ -123,10 +123,6 @@ const ChatBox: FC<ChatBoxProps> = ({
       audioRef.current.play()
     }
   }, [audioUrl])
-  function resize(textArea: HTMLTextAreaElement) {
-    textArea.style.height = 'inherit'
-    textArea.style.height = `${textArea.scrollHeight}px`
-  }
   const audioRef = useRef<HTMLAudioElement>(null)
 
   return (
@@ -162,10 +158,10 @@ const ChatBox: FC<ChatBoxProps> = ({
           update({ previewing: false })
         }}
       />
-      <textarea
-        onInput={(e: any) => {
-          resize(e.target)
-        }}
+      <TextareaAutosize
+        // onInput={(e: any) => {
+        //   resize(e.target)
+        // }}
         onKeyDown={(e: any) => {
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault()
@@ -177,30 +173,22 @@ const ChatBox: FC<ChatBoxProps> = ({
           }
         }}
         onChange={(e: any) => {
-          log('text change:', e.target.value)
           update({ text: e.target.value })
-          setAudioUrl(undefined)
+          if (audioUrl) setAudioUrl(undefined)
         }}
         value={text}
-        ref={(textRef) => {
-          if (role != 'assistant' && textRef && !previewing) {
-            textRef.focus()
-          }
-          if (textRef) setTextArea(textRef)
-        }}
+        ref={textAreaRef}
         hidden={loading || previewing}
         onBlur={() => {
           log('text blur:', previewing)
           update({ previewing: true })
         }}
         className="form-control message-text"
-        // Setting autoFocus in React differs from the HTML attribute
         autoFocus={!previewing || role != 'assistant'}
         placeholder={placeholder}
         aria-label="message"
         rows={1}
         spellCheck={false}
-        // You might handle events directly, e.g., onChange, onFocus etc.
       />
       <button
         className="btn btn-outline-danger message-delete form-button"
@@ -234,11 +222,6 @@ const ChatBox: FC<ChatBoxProps> = ({
         onClick={async (e) => {
           const textToSpeech = text.trim()
           log('text:', textToSpeech)
-          // playButton.disabled = true
-
-          // Change the icon to a loading icon
-          // buttonIcon.src = 'loading-icon.png' // Path to loading icon
-
           const audioUrl = await chatgpt.tts(textToSpeech)
           console.log('audio url:', audioUrl)
           setAudioUrl(audioUrl)
