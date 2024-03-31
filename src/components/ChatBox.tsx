@@ -167,7 +167,7 @@ const ChatBox: FC<ChatBoxProps> = ({
         value={text}
         ref={(textArea: HTMLTextAreaElement | null) => {
           if (!textArea) return
-          textArea.focus()
+          if (role != 'assistant' && !previewing) textArea.focus()
         }}
         hidden={loading || previewing}
         onBlur={() => {
