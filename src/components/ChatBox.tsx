@@ -76,9 +76,7 @@ const ChatBox: FC<ChatBoxProps> = ({
   submit
 }) => {
   const [audioUrl, setAudioUrl] = useState<string>()
-  const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const { deleteChatBox, updateChatBox } = useChatBox()
-  const systemRole = Generator.roles.system.role
   const userRole = Generator.roles.user.role
   const assistantRole = Generator.roles.assistant.role
   const toShake = () => {
@@ -103,13 +101,6 @@ const ChatBox: FC<ChatBoxProps> = ({
     aChatBox.index = index
     updateChatBox(aChatBox)
   }
-
-  // useEffect(() => {
-  //   if (textAreaRef.current && !previewing) {
-  //     textAreaRef.current.focus({ preventScroll: true })
-  //     // resize(textAreaRef.current)
-  //   }
-  // }, [textAreaRef, previewing])
   useEffect(() => {
     log('shaking:', shaking)
     if (shaking) {
@@ -159,9 +150,6 @@ const ChatBox: FC<ChatBoxProps> = ({
         }}
       />
       <TextareaAutosize
-        // onInput={(e: any) => {
-        //   resize(e.target)
-        // }}
         onKeyDown={(e: any) => {
           if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault()
@@ -177,7 +165,10 @@ const ChatBox: FC<ChatBoxProps> = ({
           if (audioUrl) setAudioUrl(undefined)
         }}
         value={text}
-        ref={textAreaRef}
+        ref={(textArea: HTMLTextAreaElement | null) => {
+          if (!textArea) return
+          textArea.focus()
+        }}
         hidden={loading || previewing}
         onBlur={() => {
           log('text blur:', previewing)

@@ -1,20 +1,9 @@
-body {
-  font-family: 'Josefin Sans', sans-serif;
-}
-
 h1 {
   font-weight: 300;
 }
 
 a {
   text-decoration: none;
-}
-
-.main-layout {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
 }
 
 .hidden {
@@ -230,11 +219,6 @@ header {
   }
 }
 
-#model-name {
-  padding: 10px 0;
-  height: 50px;
-}
-
 @keyframes shake {
   0% {
     transform: translate(1px, 1px) rotate(0deg);
@@ -274,4 +258,34 @@ header {
 .shake {
   animation: shake 0.5s;
   animation-iteration-count: infinite;
+}
+
+body,
+html {
+  font-family: 'Josefin Sans', sans-serif;
+  height: 100%;
+  margin: 0;
+}
+
+.wrapper {
+  // min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  // display: grid;
+  // grid-template-rows: auto 1fr auto auto;
+  position: relative;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  padding-top: 10px;
+  code {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
 }

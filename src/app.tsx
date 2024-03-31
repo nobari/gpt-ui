@@ -9,6 +9,7 @@ import ChatBox from './components/ChatBox'
 import JBButton from './components/JBButton'
 import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
+import { version } from '../package.json'
 export const chatgpt = new Generator()
 
 export function App() {
@@ -211,19 +212,24 @@ function MainLayout() {
   }, [])
 
   return (
-    <div class="main-layout">
-      <div class="container">
+    <div className="wrapper">
+      <div className="container">
         <ChatBoxProvider>
           <ChatForm />
         </ChatBoxProvider>
         <button
           type="button"
-          class="btn btn-secondary reload"
+          className="btn btn-secondary reload"
           onClick={() => window.location.reload()}
         >
-          <span class="fas fa-sync"></span>
+          <span className="fas fa-sync"></span>
         </button>
-        <div id="model-name">{chatgpt.model}</div>
+        <footer className="footer">
+          <code>
+            <div>Model: {chatgpt.model}</div>
+            <div>Version: {version}</div>
+          </code>
+        </footer>
       </div>
     </div>
   )

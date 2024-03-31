@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Bump & Deploy to GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -37,6 +37,20 @@ jobs:
 
       - name: Install Dependencies
         run: yarn install
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Bump Minor Version
+        run: yarn version --minor --no-git-tag-version
+
+      - name: Push Version Bump Commit
+        run: |
+          git add package.json
+          git commit -m "Bump minor version [skip ci]"
+          git push
 
       - name: Build Production Version
         run: yarn build

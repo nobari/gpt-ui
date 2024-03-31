@@ -130,7 +130,7 @@ export const navigateTo = (url: string) => {
 }
 
 export function getPreviewHtml(text: string) {
-  return marked.parse(text.replace(/\n/g, '<br>'))
+  return marked.parse(text)
 }
 
 function fallbackCopyTextToClipboard(text: string) {
