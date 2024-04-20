@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { aChatBox, useChatBox } from '../contexts/ChatBoxContext'
 import { Generator, payloadRole } from '../utils/classes'
 import { copyTextToClipboard, getPreviewHtml } from '../utils/utils'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 import hljs from 'highlight.js'
 import { chatgpt } from '../app'
@@ -43,7 +45,37 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
   const parsed = useMemo(() => {
     const trimmedText = text?.trim()
     if (!trimmedText) return
-    const parsedMarkdown = getPreviewHtml(text!) as string // to include break lines
+
+    // Function to render math formulas using KaTeX
+    const renderMath = (text: string) => {
+      // This is a simplistic approach and might need adjustments based on your specific needs
+      // For example, you might have math expressions delimited by $...$ or $$...$$
+      return text.replace(
+        /(\$\$(.*?)\$\$|\$(.*?)\$|\\\((.*?)\\\))/g,
+        (match, p1, p2, p3, p4) => {
+          try {
+            // Choose the non-undefined group
+            const formula = p2 || p3 || p4
+            const result = katex.renderToString(formula, {
+              throwOnError: false
+            })
+            console.log(`result: ${result} match: ${match} formula: ${formula}`)
+            return result
+          } catch (e) {
+            console.error('KaTeX rendering error:', e)
+            return match // Return the original string if there's an error
+          }
+        }
+      )
+    }
+
+    // Then render math formulas within the converted HTML
+    const parsedMath = renderMath(text!)
+    console.log('parsedMath:', parsedMath)
+
+    // Convert markdown to HTML first (assuming getPreviewHtml does this)
+    const parsedMarkdown = getPreviewHtml(parsedMath) as string
+    console.log('parsedMarkdown:', parsedMarkdown)
 
     return `<div>${highlightPreCode(parsedMarkdown)}</div>`
   }, [text])
