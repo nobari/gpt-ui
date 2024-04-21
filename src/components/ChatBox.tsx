@@ -46,27 +46,34 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
     const trimmedText = text?.trim()
     if (!trimmedText) return
 
-    // Function to render math formulas using KaTeX
-    const renderMath = (text: string) => {
-      // This is a simplistic approach and might need adjustments based on your specific needs
-      // For example, you might have math expressions delimited by $...$ or $$...$$
-      return text.replace(
-        /(\$\$(.*?)\$\$|\$(.*?)\$|\\\((.*?)\\\))/g,
-        (match, p1, p2, p3, p4) => {
-          try {
-            // Choose the non-undefined group
-            const formula = p2 || p3 || p4
-            const result = katex.renderToString(formula, {
-              throwOnError: false
-            })
-            console.log(`result: ${result} match: ${match} formula: ${formula}`)
-            return result
-          } catch (e) {
-            console.error('KaTeX rendering error:', e)
-            return match // Return the original string if there's an error
-          }
+    // Function to render math formulas using KaTeX, excluding code segments
+    function renderMath(text: string): string {
+      // Split text into code and non-code segments
+      const segments = text.split(/(<code>[\s\S]*?<\/code>|```[\s\S]*?```)/);
+      return segments.map(segment => {
+        // Process only non-code segments
+        if (!segment.startsWith('<code>')&&!segment.startsWith('```')) {
+          return segment.replace(
+            /(\$\$(.*?)\$\$|\$(.*?)\$|\\\((.*?)\\\))/g,
+            (match, p1, p2, p3, p4) => {
+              try {
+                // Choose the non-undefined group
+                const formula = p2 || p3 || p4;
+                const result = katex.renderToString(formula, {
+                  throwOnError: true // Avoid throwing errors
+                });
+                console.log(`result: ${result} match: ${match} formula: ${formula}`);
+                return result.includes('katex-error') ? match : result; // Check if result contains 'katex-error' class, return original match if true
+              } catch (e) {
+                // console.error('KaTeX rendering error:', e, match);
+                return match; // Return the original string if there's an error
+              }
+            }
+          );
+        } else {
+          return segment; // Return code segments unchanged
         }
-      )
+      }).join(''); // Rejoin processed segments
     }
 
     // Then render math formulas within the converted HTML
