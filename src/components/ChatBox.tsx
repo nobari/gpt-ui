@@ -77,11 +77,11 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
     }
 
     // Then render math formulas within the converted HTML
-    const parsedMath = renderMath(text!)
-    console.log('parsedMath:', parsedMath)
+    // const parsedMath = renderMath(text!)
+    // console.log('parsedMath:', parsedMath)
 
     // Convert markdown to HTML first (assuming getPreviewHtml does this)
-    const parsedMarkdown = getPreviewHtml(parsedMath) as string
+    const parsedMarkdown = getPreviewHtml(text!) as string
     console.log('parsedMarkdown:', parsedMarkdown)
 
     return `<div>${highlightPreCode(parsedMarkdown)}</div>`
