@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'preact/hooks'
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import './app.scss'
 import 'bootstrap'
 import { Generator } from './utils/classes'
@@ -10,6 +10,7 @@ import JBButton from './components/JBButton'
 import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
 import { version } from '../package.json'
+import { translateTextFromImage } from './utils/google'
 export const chatgpt = new Generator()
 
 export function App() {
@@ -21,6 +22,21 @@ function ChatForm() {
   const [jb, setJB] = useState(false)
   const [loading, setLoading] = useState<boolean>()
   const [systemText, setSystemText] = useState<string>()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (file) {
+      const ocr = await translateTextFromImage(file, 'ja')
+      const text = `${ocr}\n\nwrite the questions with answers.`
+      addChatBox({
+        previewing: true, //to avoid focusing or opening keyboard
+        text,
+        role: 'user'
+      })
+    }
+  }
 
   const addNewPassiveChatBox = () => {
     console.log(chatBoxs)
@@ -135,6 +151,21 @@ function ChatForm() {
             setJB(checked)
           }}
         />
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          OCR
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          style={{ display: 'none' }}
+          id="fileInput"
+        />
       </div>
       <RecordingSection />
       <AddMessageButton />
@@ -210,7 +241,6 @@ function MainLayout() {
   useEffect(() => {
     // Setup logic to replace init()
   }, [])
-
   return (
     <div className="wrapper">
       <div className="container">

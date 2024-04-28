@@ -8,26 +8,41 @@ import {
 } from 'openai/resources/chat/completions'
 import { aChatBox } from '../contexts/ChatBoxContext'
 
-const OPENAI_CONFIGS = {
-  apiKey: ''
+export const CONFIGS = {
+  apiKeys: {
+    openai: '',
+    google: ''
+  }
 }
+const ENCODED_SEC =
+  'U2FsdGVkX1/szssph+//etQ3lrfH+CHbyO68KW+Rwuy4R301tSiEjTPMHJOlVYoA7nXNlmCeIZ5x1+qXabLjbotRuTJTKDoLghhOKN20KZt473wlEhn5Z0CcCdUQvjX3nenXLT7V6UahI1oNUpJIpTH+Lly9xYTYetmrFA5hQhZ0YnKph1oHx17v8h22bsBV'
 
+//to update/add keys use this function. It returns the new encrypted string for ENCODED_SEC.
+function changeSec(key: string, newObj: any) {
+  const dec = decrypt(ENCODED_SEC, key)
+  console.log(dec)
+  const json = JSON.parse(dec)
+  for (const key in newObj) {
+    json[key] = newObj[key]
+  }
+  const enc = encrypt(JSON.stringify(json), key)
+  console.log('new ENCODED_SEC:' + enc)
+  return enc
+}
 function ensureApiKey() {
   // initialize elements
-  OPENAI_CONFIGS.apiKey = manageLS.getAPIKey() || ''
+  CONFIGS.apiKeys = manageLS.getAPIKeys()
 
-  while (!OPENAI_CONFIGS.apiKey.length) {
+  while (!CONFIGS.apiKeys) {
     const key = window.prompt('pass')
     try {
       if (key) {
-        const enced =
-          'U2FsdGVkX1/YibryM+XhHegTNH5l3yDaw5NGvzfw1m1uwdRskl86vcBsTlrhbB5kuL8DqGfVWHT+JXPPI9YUVRARrwwmuXnFRA2BkHt/9cY='
-        const api = decrypt(enced, key)
-        if (!api) {
+        const json = JSON.parse(decrypt(ENCODED_SEC, key))
+        if (!json) {
           window.location.reload()
         } else {
-          OPENAI_CONFIGS.apiKey = api
-          manageLS.setAPIKey(api)
+          CONFIGS.apiKeys = json
+          manageLS.setAPIKeys(json)
         }
       } else {
         window.location.reload()
@@ -69,7 +84,7 @@ export class Generator {
   constructor() {
     ensureApiKey()
     this.openai = new OpenAI({
-      apiKey: OPENAI_CONFIGS.apiKey,
+      apiKey: CONFIGS.apiKeys.openai,
       dangerouslyAllowBrowser: true
     })
   }
@@ -163,7 +178,7 @@ export class Generator {
     return fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${OPENAI_CONFIGS.apiKey}`
+        Authorization: `Bearer ${CONFIGS.apiKeys.openai}`
       },
       body: formData
     })
@@ -185,7 +200,7 @@ export class Generator {
     const options: RequestInit = {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${OPENAI_CONFIGS.apiKey}`,
+        Authorization: `Bearer ${CONFIGS.apiKeys.openai}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -260,7 +275,7 @@ export class ImageGen {
     if (type == 'd') {
       headers = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_CONFIGS.apiKey}`
+        Authorization: `Bearer ${CONFIGS.apiKeys.openai}`
       }
       body = JSON.stringify({
         prompt,
