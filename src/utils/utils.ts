@@ -129,8 +129,21 @@ export const navigateTo = (url: string) => {
   window.location.href = url
 }
 
-export function getPreviewHtml(text: string) {
-  return marked.parse(text)
+export async function getPreviewHtml(text: string) {
+  let html = await marked.parse(text)
+  // Create a temporary container to manipulate the HTML
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
+
+  // Find all <p> tags and set the dir attribute to "rtl"
+  tempDiv.querySelectorAll('p').forEach((p) => {
+    if (/[\u0590-\u05FF\u0600-\u06FF]/.test(p.textContent || '')) {
+      p.setAttribute('dir', 'rtl')
+    }
+  })
+
+  // Return the modified HTML
+  return tempDiv.innerHTML
 }
 
 function fallbackCopyTextToClipboard(text: string) {

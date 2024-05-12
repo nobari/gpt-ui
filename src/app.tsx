@@ -10,7 +10,11 @@ import JBButton from './components/JBButton'
 import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
 import { version } from '../package.json'
-import { translateTextFromImage } from './utils/google'
+import {
+  translateTextFromAudio,
+  translateTextFromAudioWithOpenAI,
+  translateTextFromImage
+} from './utils/google'
 export const chatgpt = new Generator()
 
 export function App() {
@@ -18,23 +22,34 @@ export function App() {
 }
 
 function ChatForm() {
-  const { chatBoxs, addChatBox, updateChatBox } = useChatBox()
+  const { chatBoxs, addChatBox, updateChatBox, deleteChatBox } = useChatBox()
   const [jb, setJB] = useState(false)
-  const [loading, setLoading] = useState<boolean>()
+  const [loading, setLoading] = useState<number>(-1)
   const [systemText, setSystemText] = useState<string>()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = (event.target as HTMLInputElement).files?.[0]
-    if (file) {
-      const ocr = await translateTextFromImage(file, 'ja')
-      const text = `${ocr}\n\nwrite the questions with answers.`
-      addChatBox({
-        previewing: true, //to avoid focusing or opening keyboard
-        text,
-        role: 'user'
-      })
+    setLoading(chatBoxs.length)
+    try {
+      const file = (event.target as HTMLInputElement).files?.[0]
+      if (file) {
+        let text = ''
+        if (file.type.startsWith('audio/')) {
+          text = await translateTextFromAudioWithOpenAI(file)
+        } else if (file.type.startsWith('image/')) {
+          text = await translateTextFromImage(file)
+        }
+        addChatBox({
+          previewing: true, //to avoid focusing or opening keyboard
+          text,
+          role: 'user'
+        })
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(-1)
     }
   }
 
@@ -66,7 +81,7 @@ function ChatForm() {
       return
     }
     let apiResponse = null
-    setLoading(true)
+    setLoading(chatBoxs.length)
     const aChatBox = addChatBox({
       loading: true,
       text: '',
@@ -95,7 +110,7 @@ function ChatForm() {
     } finally {
       aChatBox.loading = false
       updateChatBox(aChatBox)
-      setLoading(false)
+      setLoading(-1)
       addNewPassiveChatBox()
     }
   }
@@ -116,15 +131,28 @@ function ChatForm() {
       </ul>
     )
   }, [chatBoxs])
+
   return (
     <form id="chatgpt-form" onSubmit={handleSubmit}>
       <div id="messages-container">
         {chatBoxs &&
           chatBoxs.map((chatBox, index) => (
-            <ChatBox key={index} {...chatBox} submit={handleSubmit} />
+            <ChatBox
+              key={index}
+              {...chatBox}
+              submit={handleSubmit}
+              deleteChatBox={(index) => {
+                console.log('deleteChatBox', index)
+                if (loading === index) {
+                  chatgpt.stopStream()
+                  setLoading(-1)
+                }
+                deleteChatBox(index)
+              }}
+            />
           ))}
       </div>
-      {loading && <Loading />}
+      {loading >= 0 && <Loading />}
 
       <div class="btn-group full-width mb-3" role="group">
         <button
@@ -156,12 +184,12 @@ function ChatForm() {
           className="btn btn-secondary"
           onClick={() => fileInputRef.current?.click()}
         >
-          OCR
+          OCR/ACR
         </button>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          // accept="image/*"
           onChange={handleFileUpload}
           style={{ display: 'none' }}
           id="fileInput"

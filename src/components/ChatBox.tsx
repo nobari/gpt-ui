@@ -13,6 +13,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 
 interface ChatBoxProps extends aChatBox {
   setAsAssistant?: boolean
+  deleteChatBox: (index: number) => void
   submit: () => void
 }
 
@@ -42,38 +43,42 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
   placeholder,
   ...props
 }) => {
-  const parsed = useMemo(() => {
+  const parsed2 = useMemo(async () => {
     const trimmedText = text?.trim()
     if (!trimmedText) return
 
     // Function to render math formulas using KaTeX, excluding code segments
     function renderMath(text: string): string {
       // Split text into code and non-code segments
-      const segments = text.split(/(<code>[\s\S]*?<\/code>|```[\s\S]*?```)/);
-      return segments.map(segment => {
-        // Process only non-code segments
-        if (!segment.startsWith('<code>')&&!segment.startsWith('```')) {
-          return segment.replace(
-            /(\$\$(.*?)\$\$|\$(.*?)\$|\\\((.*?)\\\))/g,
-            (match, p1, p2, p3, p4) => {
-              try {
-                // Choose the non-undefined group
-                const formula = p2 || p3 || p4;
-                const result = katex.renderToString(formula, {
-                  throwOnError: true // Avoid throwing errors
-                });
-                console.log(`result: ${result} match: ${match} formula: ${formula}`);
-                return result.includes('katex-error') ? match : result; // Check if result contains 'katex-error' class, return original match if true
-              } catch (e) {
-                // console.error('KaTeX rendering error:', e, match);
-                return match; // Return the original string if there's an error
+      const segments = text.split(/(<code>[\s\S]*?<\/code>|```[\s\S]*?```)/)
+      return segments
+        .map((segment) => {
+          // Process only non-code segments
+          if (!segment.startsWith('<code>') && !segment.startsWith('```')) {
+            return segment.replace(
+              /(\$\$(.*?)\$\$|\$(.*?)\$|\\\((.*?)\\\))/g,
+              (match, p1, p2, p3, p4) => {
+                try {
+                  // Choose the non-undefined group
+                  const formula = p2 || p3 || p4
+                  const result = katex.renderToString(formula, {
+                    throwOnError: true // Avoid throwing errors
+                  })
+                  console.log(
+                    `result: ${result} match: ${match} formula: ${formula}`
+                  )
+                  return result.includes('katex-error') ? match : result // Check if result contains 'katex-error' class, return original match if true
+                } catch (e) {
+                  // console.error('KaTeX rendering error:', e, match);
+                  return match // Return the original string if there's an error
+                }
               }
-            }
-          );
-        } else {
-          return segment; // Return code segments unchanged
-        }
-      }).join(''); // Rejoin processed segments
+            )
+          } else {
+            return segment // Return code segments unchanged
+          }
+        })
+        .join('') // Rejoin processed segments
     }
 
     // Then render math formulas within the converted HTML
@@ -81,10 +86,28 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
     // console.log('parsedMath:', parsedMath)
 
     // Convert markdown to HTML first (assuming getPreviewHtml does this)
-    const parsedMarkdown = getPreviewHtml(text!) as string
+    const parsedMarkdown = await getPreviewHtml(text!)
     console.log('parsedMarkdown:', parsedMarkdown)
 
     return `<div>${highlightPreCode(parsedMarkdown)}</div>`
+  }, [text])
+
+  const [parsed, setParsed] = useState<string | undefined>()
+
+  useEffect(() => {
+    const processText = async () => {
+      const trimmedText = text?.trim()
+      if (!trimmedText) {
+        setParsed(undefined)
+        return
+      }
+
+      const parsedMarkdown = await getPreviewHtml(trimmedText)
+      const highlightedHtml = highlightPreCode(parsedMarkdown)
+      setParsed(`<div>${highlightedHtml}</div>`)
+    }
+
+    processText()
   }, [text])
   return (
     <div class="preview form-control message-text" tabIndex={0} {...props}>
@@ -112,10 +135,11 @@ const ChatBox: FC<ChatBoxProps> = ({
   setAsAssistant,
   shaking,
   loading,
-  submit
+  submit,
+  deleteChatBox
 }) => {
   const [audioUrl, setAudioUrl] = useState<string>()
-  const { deleteChatBox, updateChatBox } = useChatBox()
+  const { updateChatBox } = useChatBox()
   const userRole = Generator.roles.user.role
   const assistantRole = Generator.roles.assistant.role
   const toShake = () => {
