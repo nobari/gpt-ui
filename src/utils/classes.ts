@@ -7,6 +7,8 @@ import {
   ChatCompletionMessageParam
 } from 'openai/resources/chat/completions'
 import { aChatBox } from '../contexts/ChatBoxContext'
+import { chatgpt } from '../app'
+import { ImageGenerateParams } from 'openai/resources/images.mjs'
 
 export const CONFIGS = {
   apiKeys: {
@@ -145,95 +147,22 @@ export class Generator {
       return true
     }
   }
-  // getRequestData(
-  //   payloadMessages: ChatCompletionMessageParam[],
-  //   toJB: boolean = false
-  // ) {
-  //   gtagLog(
-  //     this.payloadMessages[this.payloadMessages.length - 1].content as string
-  //   ) // Pass the content of the textbox as the event value
-  //   return {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       Authorization: `Bearer ${OPENAI_CONFIGS.apiKey}`
-  //     },
-  //     body: JSON.stringify({
-  //       model: this.model,
-  //       messages: toJB
-  //         ? [JBLoad, ...this.payloadMessages]
-  //         : this.payloadMessages,
-  //       stream: this.stream,
-  //       temperature: this.temperature
-  //     })
-  //   }
-  // }
 
-  stt(audioFile: File) {
-    const model = 'whisper-1'
-
-    const formData = new FormData()
-    formData.append('file', audioFile)
-    formData.append('model', model)
-    return fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${CONFIGS.apiKeys.openai}`
-      },
-      body: formData
+  async stt(audioFile: File) {
+    const response = await chatgpt.openai.audio.transcriptions.create({
+      file: audioFile,
+      model: 'whisper-1'
     })
-      .then(async (resp) => {
-        const data = await resp.json()
-        // Handle the transcription response
-        console.log('transcriptions:', data)
-        return data as { text: string }
-      })
-      .catch((error) => {
-        // Handle any errors
-        console.error(error)
-        alert(error)
-      })
+    return response.text
   }
   async tts(text: string) {
-    const url = 'https://api.openai.com/v1/audio/speech'
-
-    const options: RequestInit = {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${CONFIGS.apiKeys.openai}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: text,
-        voice: 'alloy' || 'echo' || 'fable' || 'onyx' || 'nova' || 'shimmer',
-        response_format: 'mp3' || 'wav' || 'ogg' || 'flac',
-        speed:
-          1 ||
-          0.25 ||
-          0.5 ||
-          0.75 ||
-          1.25 ||
-          1.5 ||
-          1.75 ||
-          2 ||
-          2.25 ||
-          2.5 ||
-          2.75 ||
-          3 ||
-          3.25 ||
-          3.5 ||
-          3.75 ||
-          4
-      })
-    }
-
-    const response = await fetch(url, options)
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
+    const response = await chatgpt.openai.audio.speech.create({
+      model: 'tts-1',
+      input: text,
+      voice: 'shimmer',
+      response_format: 'mp3',
+      speed: 1
+    })
     const blob = await response.blob()
 
     const objectURL = URL.createObjectURL(blob)
@@ -249,19 +178,20 @@ export class ImageGen {
   /**
    * The number of images to generate. Must be between 1 and 10.
    */
-  n: number = 2
+  n: ImageGenerateParams['n'] = 2
 
   /**
    * Defaults to 1024x1024
    * The size of the generated images. Must be one of 256x256, 512x512, or 1024x1024.
    */
-  size: string = '512x512'
+  size: ImageGenerateParams['size'] = '512x512'
+
+  model: ImageGenerateParams['model'] = 'dall-e-3'
 
   endPoints = {
-    d: 'https://api.openai.com/v1/images/generations',
     m: 'https://asia-east1-slack-manage.cloudfunctions.net/samo'
   }
-  response_format = 'b64_json' //"url"
+  response_format: ImageGenerateParams['response_format'] = 'b64_json' //"url"
   generatedImgs = 0
   /**
    *
@@ -273,16 +203,14 @@ export class ImageGen {
     console.log('draw image:', prompt)
     let headers, body
     if (type == 'd') {
-      headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${CONFIGS.apiKeys.openai}`
-      }
-      body = JSON.stringify({
+      const res = await chatgpt.openai.images.generate({
         prompt,
-        size: this.size,
+        model: this.model,
         n: this.n,
+        size: this.size,
         response_format: this.response_format
       })
+      return res.data.map((u) => 'data:image/jpeg;base64,' + u.b64_json)
     } else {
       headers = {
         'Content-Type': 'application/json'
@@ -334,25 +262,24 @@ export class ImageGen {
         // tiling: false,
         // width: 512,
       })
-    }
-    console.log(headers, body)
-    const res = await fetch(this.endPoints[type], {
-      method: 'POST',
-      headers,
-      body
-    })
 
-    if (type == 'm') {
-      const data = await res.json()
-      console.log(data)
-      if (data.images?.length > 1) data.images.shift()
-      return data.images.map((u: any) => 'data:image/jpeg;base64,' + u)
+      console.log(headers, body)
+      const res = await fetch(this.endPoints.m, {
+        method: 'POST',
+        headers,
+        body
+      })
+
+      if (type == 'm') {
+        const data = await res.json()
+        console.log(data)
+        if (data.images?.length > 1) data.images.shift()
+        return data.images.map((u: any) => 'data:image/jpeg;base64,' + u)
+      }
+      const data = (await res.json()).data
+      console.log('result:', data)
+      return data.map((u: any) => 'data:image/jpeg;base64,' + u.b64_json)
     }
-    const data = (await res.json()).data
-    console.log('result:', data)
-    return data.map(
-      (u: any) => 'data:image/jpeg;base64,' + u[this.response_format]
-    )
   }
 }
 

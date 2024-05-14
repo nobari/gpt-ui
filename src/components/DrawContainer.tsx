@@ -23,7 +23,7 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
     // const collectionId = Date.now();
     const ids: number[] = []
     const offset = images.length
-    for (let i = 0; i < imageGen.n; i++) {
+    for (let i = 0; i < imageGen.n!; i++) {
       ids.push(i + offset)
       images.push({ type })
     }

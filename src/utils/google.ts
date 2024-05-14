@@ -1,7 +1,7 @@
 import { chatgpt } from '../app'
 import { CONFIGS } from './classes'
 
-export async function translateTextFromImage(file: File) {
+export async function transcribeTextFromImage(file: File) {
   try {
     const API_KEY = CONFIGS.apiKeys.google
     // Convert File object to a Base64 string for the Google Vision API
@@ -66,7 +66,7 @@ export async function translateTextFromImage(file: File) {
   }
 }
 
-export async function translateTextFromAudio(
+export async function transcribeTextFromAudio(
   file: File,
   sourceLanguage = 'ja-JP',
   targetLanguage?: string
@@ -130,45 +130,7 @@ export async function translateTextFromAudio(
 
     console.log(`Detected text: ${transcript}`)
     return transcript
-
-    // Translate the text using Google Translate API
-    // Note: Add translation logic here if needed
   } catch (err) {
     console.error('ERROR:', err)
-  }
-}
-
-export async function translateTextFromAudioWithOpenAI(
-  file: File,
-  sourceLanguage = 'ja-JP',
-  targetLanguage = 'en'
-) {
-  try {
-    // const API_KEY = CONFIGS.apiKeys.openai
-    // // Convert File object to a Base64 string
-    // const reader = new FileReader()
-    // reader.readAsDataURL(file)
-    // const base64String = await new Promise<string>((resolve) => {
-    //   reader.onload = () => resolve(reader.result as string)
-    // })
-
-    // // Remove the Base64 prefix (e.g., "data:audio/wav;base64,")
-    // const base64Content = base64String.split(',')[1]
-
-    // Transcribe audio to text using OpenAI's Whisper model
-    const transcriptionResponse =
-      await chatgpt.openai.audio.transcriptions.create({
-        model: 'whisper-1',
-        language: 'ja',
-        file
-      })
-
-    const transcript = transcriptionResponse.text
-    console.log(`Detected text: ${transcript}`)
-
-    return transcript
-  } catch (err) {
-    console.error('ERROR:', err)
-    return `error: ${err}`
   }
 }

@@ -4,6 +4,7 @@ import { useContext, useState } from 'preact/hooks'
 export type aChatBox = {
   index: number
   text: string
+  base64String?: string
   previewing?: boolean
   role: string
   //UI props

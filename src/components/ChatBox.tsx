@@ -135,6 +135,7 @@ const ChatBox: FC<ChatBoxProps> = ({
   setAsAssistant,
   shaking,
   loading,
+  base64String,
   submit,
   deleteChatBox
 }) => {
@@ -178,7 +179,28 @@ const ChatBox: FC<ChatBoxProps> = ({
     }
   }, [audioUrl])
   const audioRef = useRef<HTMLAudioElement>(null)
-
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const handleFileSubmit = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      const file = (event.target as HTMLInputElement).files?.[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = function (event: any) {
+          const base64String = `data:image/jpeg;base64,${
+            event.target.result.split(',')[1]
+          }`
+          console.log('Base64 string of file:', base64String)
+          update({ base64String })
+        }
+        reader.readAsDataURL(file)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+    }
+  }
   return (
     <div className={`chat-box ${shaking ? 'shake' : ''}`}>
       <button
@@ -283,6 +305,22 @@ const ChatBox: FC<ChatBoxProps> = ({
       >
         <span className="fas fa-play" />
       </button>
+
+      <button
+        type="button"
+        className={`btn ${base64String ? 'btn-secondary' : ''}`}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <span className={`fa-image ${base64String ? 'far' : 'fas'}`} />
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSubmit}
+        style={{ display: 'none' }}
+        id="fileInput"
+      />
 
       <audio
         hidden={!audioUrl}

@@ -3,18 +3,18 @@ import './app.scss'
 import 'bootstrap'
 import { Generator } from './utils/classes'
 
-import { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionUserMessageParam
+} from 'openai/resources/chat/completions'
 import { ChatBoxProvider, useChatBox } from './contexts/ChatBoxContext'
 import ChatBox from './components/ChatBox'
 import JBButton from './components/JBButton'
 import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
 import { version } from '../package.json'
-import {
-  translateTextFromAudio,
-  translateTextFromAudioWithOpenAI,
-  translateTextFromImage
-} from './utils/google'
+import { transcribeTextFromImage } from './utils/google'
+
 export const chatgpt = new Generator()
 
 export function App() {
@@ -36,9 +36,9 @@ function ChatForm() {
       if (file) {
         let text = ''
         if (file.type.startsWith('audio/')) {
-          text = await translateTextFromAudioWithOpenAI(file)
+          text = await chatgpt.stt(file)
         } else if (file.type.startsWith('image/')) {
-          text = await translateTextFromImage(file)
+          text = await transcribeTextFromImage(file)
         }
         addChatBox({
           previewing: true, //to avoid focusing or opening keyboard
@@ -91,7 +91,18 @@ function ChatForm() {
       const payloadMessages = chatBoxs.map((chatBox) => {
         return {
           role: chatBox.role,
-          content: chatBox.text
+          content: chatBox.base64String
+            ? [
+                {
+                  text: chatBox.text,
+                  type: 'text'
+                },
+                {
+                  type: 'image_url',
+                  image_url: { url: chatBox.base64String }
+                }
+              ]
+            : chatBox.text
         } as ChatCompletionMessageParam
       })
       if (systemText)
@@ -210,9 +221,8 @@ function ChatForm() {
       <AudioRecorder
         onRecorded={async (url, file) => {
           console.log(url, file)
-          const res = await chatgpt.stt(file)
-          if (res) {
-            const text = res.text
+          const text = await chatgpt.stt(file)
+          if (text) {
             addChatBox({ text, role: 'user' })
           }
         }}
