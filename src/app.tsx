@@ -27,6 +27,7 @@ function ChatForm() {
   const [loading, setLoading] = useState<number>(-1)
   const [systemText, setSystemText] = useState<string>()
   const fileInputRef = useRef<HTMLInputElement>(null)
+
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -41,24 +42,17 @@ function ChatForm() {
           text = await transcribeTextFromImage(file)
         }
         addChatBox({
-          previewing: true, //to avoid focusing or opening keyboard
-          text,
-          role: 'user'
+          chatbox: {
+            previewing: true, //to avoid focusing or opening keyboard
+            text,
+            role: 'user'
+          }
         })
       }
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(-1)
-    }
-  }
-
-  const addNewPassiveChatBox = () => {
-    console.log(chatBoxs)
-    if (chatBoxs[chatBoxs.length - 1].role == 'assistant') {
-      addChatBox({
-        previewing: true //to avoid focusing or opening keyboard
-      })
     }
   }
   const handleSubmit = async (e?: any) => {
@@ -83,9 +77,11 @@ function ChatForm() {
     let apiResponse = null
     setLoading(chatBoxs.length)
     const aChatBox = addChatBox({
-      loading: true,
-      text: '',
-      role: 'assistant'
+      chatbox: {
+        loading: true,
+        text: '',
+        role: 'assistant'
+      }
     })!
     try {
       const payloadMessages = chatBoxs.map((chatBox) => {
@@ -122,7 +118,7 @@ function ChatForm() {
       aChatBox.loading = false
       updateChatBox(aChatBox)
       setLoading(-1)
-      addNewPassiveChatBox()
+      addChatBox({ chatbox: { previewing: true }, passive: true })
     }
   }
   const downloadTypes = useMemo(() => {
@@ -152,7 +148,7 @@ function ChatForm() {
               key={index}
               {...chatBox}
               submit={handleSubmit}
-              deleteChatBox={(index) => {
+              deleteChatBox={(index: number) => {
                 console.log('deleteChatBox', index)
                 if (loading === index) {
                   chatgpt.stopStream()
@@ -223,7 +219,7 @@ function ChatForm() {
           console.log(url, file)
           const text = await chatgpt.stt(file)
           if (text) {
-            addChatBox({ text, role: 'user' })
+            addChatBox({ chatbox: { text, role: 'user' } })
           }
         }}
       />
@@ -267,7 +263,7 @@ function AddMessageButton() {
         title="Add new message"
         id="add-message"
         onClick={(e) => {
-          addChatBox()
+          addChatBox({})
         }}
       >
         <span className="fas fa-plus" /> Add message

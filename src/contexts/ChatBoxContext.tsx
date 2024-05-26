@@ -1,5 +1,5 @@
 import { FunctionComponent, createContext } from 'preact'
-import { useContext, useState } from 'preact/hooks'
+import { useContext, useEffect, useRef, useState } from 'preact/hooks'
 
 export type aChatBox = {
   index: number
@@ -14,7 +14,13 @@ export type aChatBox = {
 
 interface ChatBoxContextType {
   chatBoxs: aChatBox[]
-  addChatBox: (chatbox?: Partial<aChatBox>) => aChatBox | void
+  addChatBox: ({
+    chatbox,
+    passive
+  }: {
+    chatbox?: Partial<aChatBox>
+    passive?: boolean
+  }) => aChatBox | void
   updateChatBox: (chatbox: Partial<aChatBox>) => void
   deleteChatBox: (index: number) => void
 }
@@ -28,16 +34,47 @@ const ChatBoxContext = createContext<ChatBoxContextType>(undefined!)
 
 export const ChatBoxProvider: FunctionComponent = ({ children }) => {
   const [chatBoxs, setChatBoxs] = useState<aChatBox[]>([initialChatBox])
+  const chatBoxsRef = useRef(chatBoxs)
 
-  const addChatBox = (newChatBox?: Partial<aChatBox>) => {
-    console.log(`addChatBox ${chatBoxs.length}:`, newChatBox)
-    if ((!newChatBox || newChatBox.role === 'user') && chatBoxs.length > 0) {
-      const lastChatBox = chatBoxs[chatBoxs.length - 1]
+  // Update the ref whenever chatBoxs changes
+  useEffect(() => {
+    chatBoxsRef.current = chatBoxs
+  }, [chatBoxs])
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (chatBoxsRef.current.length > 0) {
+        const lastChatBox = chatBoxsRef.current[chatBoxsRef.current.length - 1]
+        console.log('lastChatBox', lastChatBox)
+        
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+
+    // Cleanup function to remove the event listener
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
+  const addChatBox = ({
+    chatbox,
+    passive
+  }: { chatbox?: Partial<aChatBox>; passive?: boolean } = {}) => {
+    const currentChatBoxs = chatBoxsRef.current // Use ref to access the current chat boxes
+    if (passive) {
+      console.log(`addChatBox passive ${currentChatBoxs.length}:`, chatbox)
+      if (currentChatBoxs[currentChatBoxs.length - 1].role != 'assistant')
+        return
+    }
+    console.log(`addChatBox ${currentChatBoxs.length}:`, chatbox)
+    if ((!chatbox || chatbox.role === 'user') && currentChatBoxs.length > 0) {
+      const lastChatBox = currentChatBoxs[currentChatBoxs.length - 1]
       if (lastChatBox.role === 'user' && !lastChatBox.text) {
-        if (newChatBox?.text) {
-          lastChatBox.text = newChatBox.text
+        if (chatbox?.text) {
+          lastChatBox.text = chatbox.text
           updateChatBox(lastChatBox)
-          return lastChatBox
+          return
         }
         lastChatBox.shaking = true
         updateChatBox(lastChatBox)
@@ -45,28 +82,19 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
           lastChatBox.shaking = false
           updateChatBox(lastChatBox)
         }, 500)
-        // window.alert('Please enter your message first')
         return
       }
     }
     const chatBoxToAdd = {
+      index: currentChatBoxs.length,
       text: '',
       role: 'user',
-      ...newChatBox
+      ...chatbox
     } as aChatBox
-    setChatBoxs((prevChatBox) => {
-      if (!chatBoxToAdd.index) chatBoxToAdd.index = prevChatBox.length
-      chatBoxs.push(chatBoxToAdd)
-      console.log(
-        'addChatBox: prevChatBox:',
-        prevChatBox,
-        'chatboxes:',
-        chatBoxs
-      )
-      return chatBoxs
-    })
+    setChatBoxs([...currentChatBoxs, chatBoxToAdd])
     return chatBoxToAdd
   }
+
   const updateChatBox = (newChatBox: Partial<aChatBox>) => {
     setChatBoxs((prevChatBoxs) => {
       const indexToUpdate = newChatBox.index || 0
