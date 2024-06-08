@@ -7,7 +7,7 @@ import {
   useState
 } from 'preact/hooks'
 import { aChatBox, useChatBox } from '../contexts/ChatBoxContext'
-import { Generator } from '../utils/classes'
+import { Generator, VOICES } from '../utils/classes'
 import { copyTextToClipboard } from '../utils/utils'
 import 'katex/dist/katex.min.css'
 
@@ -48,6 +48,7 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
     ref
   ) => {
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
+    const [audioLoading, setAudioLoading] = useState(false)
     const [audioUrl, setAudioUrl] = useState<string>()
     const { updateChatBox } = useChatBox()
     const userRole = Generator.roles.user.role
@@ -214,20 +215,43 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
 
         <button
           id="playButton"
+          disabled={audioLoading}
           className="btn form-button play-btn btn-dark"
           type="button"
           title="Play"
           hidden={!!audioUrl}
           onClick={async (e) => {
+            setAudioLoading(true)
             const textToSpeech = text.trim()
             log('text:', textToSpeech)
             const audioUrl = await chatgpt.tts(textToSpeech)
             console.log('audio url:', audioUrl)
             setAudioUrl(audioUrl)
+            setAudioLoading(false)
           }}
         >
-          <span className="fas fa-play" />
+          <span className={`fas ${audioLoading ? 'fa-spinner' : 'fa-play'}`} />
         </button>
+        <div class="d-inline-flex align-items-center gap-2">
+          <label htmlFor="voiceSelect" class="form-label">
+            🔊
+          </label>
+          <select
+            className="form-select"
+            id="voiceSelect"
+            value={chatgpt.selectedVoice}
+            onChange={(e: any) => {
+              chatgpt.selectedVoice = e.target.value
+              setAudioUrl(undefined)
+            }}
+          >
+            {VOICES.map((voice) => (
+              <option key={voice} value={voice}>
+                {voice}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <button
           type="button"
@@ -244,13 +268,16 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
           style={{ display: 'none' }}
           id="fileInput"
         />
-
-        <audio
-          hidden={!audioUrl}
-          src={audioUrl}
-          controls={!!audioUrl}
-          ref={audioRef}
-        />
+        <div className="audio-container d-flex justify-content-center align-items-center">
+          <audio
+            hidden={!audioUrl}
+            src={audioUrl}
+            controls={!!audioUrl}
+            ref={audioRef}
+            className="form-control" // This class adds Bootstrap styling
+            style={{ width: '100%' }} // Ensure the audio control spans the full width of its container
+          />
+        </div>
         <DrawContainer toShake={toShake} prompt={text} />
       </div>
     )

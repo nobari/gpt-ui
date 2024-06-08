@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import './app.scss'
 import 'bootstrap'
-import { Generator } from './utils/classes'
+import { Generator, VOICES } from './utils/classes'
 
 import {
   ChatCompletionMessageParam,
@@ -256,7 +256,7 @@ function AddMessageButton() {
   const { addChatBox } = useChatBox()
 
   return (
-    <div class="mb-3 p-0">
+    <div class="mb-3 p-0 d-flex align-items-center gap-2 justify-content-between">
       <button
         class="btn btn-dark btn-sm"
         type="button"
@@ -268,6 +268,7 @@ function AddMessageButton() {
       >
         <span className="fas fa-plus" /> Add message
       </button>
+      
     </div>
   )
 }
