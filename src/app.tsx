@@ -26,35 +26,7 @@ function ChatForm() {
   const [jb, setJB] = useState(false)
   const [loading, setLoading] = useState<number>(-1)
   const [systemText, setSystemText] = useState<string>()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setLoading(chatBoxs.length)
-    try {
-      const file = (event.target as HTMLInputElement).files?.[0]
-      if (file) {
-        let text = ''
-        if (file.type.startsWith('audio/')) {
-          text = await chatgpt.stt(file)
-        } else if (file.type.startsWith('image/')) {
-          text = await transcribeTextFromImage(file)
-        }
-        addChatBox({
-          chatbox: {
-            previewing: true, //to avoid focusing or opening keyboard
-            text,
-            role: 'user'
-          }
-        })
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(-1)
-    }
-  }
   const handleSubmit = async (e?: any) => {
     if (e) e.preventDefault()
     console.log('submit:', chatBoxs)
@@ -121,23 +93,6 @@ function ChatForm() {
       addChatBox({ chatbox: { previewing: true }, passive: true })
     }
   }
-  const downloadTypes = useMemo(() => {
-    return (
-      <ul class="dropdown-menu">
-        {(['md', 'html', 'py'] as DOWNLOAD_TYPES[]).map((type) => (
-          <li>
-            <button
-              type="button"
-              class="dropdown-item p-3"
-              onClick={(e) => downloadWrapper(chatBoxs, type)}
-            >
-              {type == 'md' ? 'Markdown' : type == 'html' ? 'HTML' : 'Python'}
-            </button>
-          </li>
-        ))}
-      </ul>
-    )
-  }, [chatBoxs])
 
   return (
     <form id="chatgpt-form" onSubmit={handleSubmit}>
@@ -156,51 +111,26 @@ function ChatForm() {
                 }
                 deleteChatBox(index)
               }}
+              setLoading={setLoading}
             />
           ))}
       </div>
       {loading >= 0 && <Loading />}
 
-      <div class="btn-group full-width mb-3" role="group">
-        <button
-          class="btn btn-success"
-          title="Ctrl + Enter"
-          type="submit"
-          id="submit"
-        >
-          Answer
-        </button>
-        <div class="btn-group" role="group">
-          <button
-            type="button"
-            class="btn btn-primary dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            Download
-          </button>
-          {downloadTypes}
-        </div>
+      <div class="d-flex justify-content-center gap-2 mb-3 w-100" role="group">
         <JBButton
           onChange={(checked) => {
             setJB(checked)
           }}
         />
         <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => fileInputRef.current?.click()}
+          class="btn btn-primary w-100"
+          title="Ctrl + Enter"
+          type="submit"
+          id="submit"
         >
-          OCR/ACR
+          Generate <span className="fas fa-paper-plane"></span>
         </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          // accept="image/*"
-          onChange={handleFileUpload}
-          style={{ display: 'none' }}
-          id="fileInput"
-        />
       </div>
       <RecordingSection />
       <AddMessageButton />
@@ -244,7 +174,50 @@ function Loading() {
     </div>
   )
 }
-
+function RefreshButton() {
+  return (
+    <button
+      type="button"
+      className="btn btn-secondary reload"
+      onClick={() => window.location.reload()}
+    >
+      <span className="fas fa-sync"></span>
+    </button>
+  )
+}
+function DownloadButtons() {
+  const { chatBoxs } = useChatBox()
+  const downloadTypes = useMemo(() => {
+    return (
+      <ul class="dropdown-menu">
+        {(['md', 'html', 'py'] as DOWNLOAD_TYPES[]).map((type) => (
+          <li>
+            <button
+              type="button"
+              class="dropdown-item"
+              onClick={(e) => downloadWrapper(chatBoxs, type)}
+            >
+              {type == 'md' ? 'Markdown' : type == 'html' ? 'HTML' : 'Python'}
+            </button>
+          </li>
+        ))}
+      </ul>
+    )
+  }, [chatBoxs])
+  return (
+    <div class="btn-group" role="group">
+      <button
+        type="button"
+        class="btn btn-dark dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <span className="fas fa-download"></span> Download
+      </button>
+      {downloadTypes}
+    </div>
+  )
+}
 function RecordingSection() {
   return (
     <div class="recording d-flex justify-content-center align-items-center my-4 gap-4">
@@ -268,7 +241,6 @@ function AddMessageButton() {
       >
         <span className="fas fa-plus" /> Add message
       </button>
-      
     </div>
   )
 }
@@ -281,14 +253,12 @@ function MainLayout() {
       <div className="container">
         <ChatBoxProvider>
           <ChatForm />
+          <div className="d-flex justify-content-between align-items-center">
+            <RefreshButton />
+            <DownloadButtons />
+          </div>
         </ChatBoxProvider>
-        <button
-          type="button"
-          className="btn btn-secondary reload"
-          onClick={() => window.location.reload()}
-        >
-          <span className="fas fa-sync"></span>
-        </button>
+
         <footer className="footer">
           <code>
             <div>Model: {chatgpt.model}</div>

@@ -44,7 +44,7 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
   }
 
   return (
-    <div className="input-group draw-container">
+    <div className="d-flex justify-content-center gap-2">
       {images && (
         <div className="drawings row">
           {images.map((image, index) => (
@@ -95,7 +95,7 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
       <button
         type="button"
         className="btn form-button draw-btn btn-dark"
-        title="Draw a pic"
+        title="Draw with Midjourney"
         onClick={(e) => draw(e, 'm')}
       >
         Draw 🎇 M
@@ -103,7 +103,7 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
       <button
         type="button"
         className="btn form-button draw-btn btn-dark"
-        title="Draw a pic"
+        title="Draw with Dall-E"
         onClick={(e) => draw(e, 'd')}
       >
         Draw 🌠 D

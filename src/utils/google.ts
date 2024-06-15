@@ -38,6 +38,10 @@ export async function transcribeTextFromImage(file: File) {
       }
     )
     const visionData = await visionResponse.json()
+    console.log('visionData', visionData)
+    if (!visionData.responses[0].textAnnotations) {
+      throw new Error('Failed to detect text')
+    }
     const detections = visionData.responses[0].textAnnotations
     const text = detections[0].description
     console.log(`Detected text: ${text}`)
@@ -63,6 +67,7 @@ export async function transcribeTextFromImage(file: File) {
     // console.log(`Translation: ${translation}`)
   } catch (err) {
     console.error('ERROR:', err)
+    alert(err)
   }
 }
 

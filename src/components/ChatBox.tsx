@@ -1,4 +1,4 @@
-import { FC, ForwardedRef, forwardRef } from 'preact/compat'
+import { forwardRef } from 'preact/compat'
 import {
   useEffect,
   useImperativeHandle,
@@ -15,6 +15,7 @@ import { chatgpt } from '../app'
 import DrawContainer from './DrawContainer'
 import TextareaAutosize from 'react-textarea-autosize'
 import ChatBoxPreview from './ChatBoxPreview'
+import { OCRButton } from './OCRButton'
 
 interface ChatBoxProps extends aChatBox {
   setAsAssistant?: boolean
@@ -41,6 +42,7 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
       setAsAssistant,
       shaking,
       loading,
+      setLoading,
       base64String,
       submit,
       deleteChatBox
@@ -200,82 +202,88 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
           <span className="fas fa-trash" />
         </button>
 
-        <button
-          className="btn form-button copy-btn btn-dark"
-          type="button"
-          data-toggle="tooltip"
-          data-placement="top"
-          title="Copy to clipboard"
-          onClick={async (e) => {
-            copyTextToClipboard(text)
-          }}
-        >
-          copy <span className="fas fa-clipboard" />
-        </button>
-
-        <button
-          id="playButton"
-          disabled={audioLoading}
-          className="btn form-button play-btn btn-dark"
-          type="button"
-          title="Play"
-          hidden={!!audioUrl}
-          onClick={async (e) => {
-            setAudioLoading(true)
-            const textToSpeech = text.trim()
-            log('text:', textToSpeech)
-            const audioUrl = await chatgpt.tts(textToSpeech)
-            console.log('audio url:', audioUrl)
-            setAudioUrl(audioUrl)
-            setAudioLoading(false)
-          }}
-        >
-          <span className={`fas ${audioLoading ? 'fa-spinner' : 'fa-play'}`} />
-        </button>
-        <div class="d-inline-flex align-items-center gap-2">
-          <label htmlFor="voiceSelect" class="form-label">
-            🔊
-          </label>
-          <select
-            className="form-select"
-            id="voiceSelect"
-            value={chatgpt.selectedVoice}
-            onChange={(e: any) => {
-              chatgpt.selectedVoice = e.target.value
-              setAudioUrl(undefined)
+        <div className="d-flex justify-content-end">
+          <button
+            className="btn form-button copy-btn btn-dark"
+            type="button"
+            title="Copy to clipboard"
+            onClick={async (e) => {
+              copyTextToClipboard(text)
             }}
           >
-            {VOICES.map((voice) => (
-              <option key={voice} value={voice}>
-                {voice}
-              </option>
-            ))}
-          </select>
-        </div>
+            <span className="fas fa-clipboard" /> Copy
+          </button>
 
-        <button
-          type="button"
-          className={`btn ${base64String ? 'btn-secondary' : ''}`}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <span className={`fa-image ${base64String ? 'far' : 'fas'}`} />
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSubmit}
-          style={{ display: 'none' }}
-          id="fileInput"
-        />
-        <div className="audio-container d-flex justify-content-center align-items-center">
-          <audio
-            hidden={!audioUrl}
-            src={audioUrl}
-            controls={!!audioUrl}
-            ref={audioRef}
-            className="form-control" // This class adds Bootstrap styling
-            style={{ width: '100%' }} // Ensure the audio control spans the full width of its container
+          <div class="d-inline-flex align-items-center gap-0 mx-2">
+            <select
+              className="form-select"
+              id="voiceSelect"
+              value={chatgpt.selectedVoice}
+              onChange={(e: any) => {
+                chatgpt.selectedVoice = e.target.value
+                setAudioUrl(undefined)
+              }}
+            >
+              {VOICES.map((voice) => (
+                <option key={voice} value={voice}>
+                  {voice} 🔊
+                </option>
+              ))}
+            </select>
+            <button
+              id="playButton"
+              disabled={audioLoading}
+              className="btn form-button play-btn btn-dark"
+              type="button"
+              title="Play"
+              hidden={!!audioUrl}
+              onClick={async (e) => {
+                setAudioLoading(true)
+                const textToSpeech = text.trim()
+                log('text:', textToSpeech)
+                const audioUrl = await chatgpt.tts(textToSpeech)
+                console.log('audio url:', audioUrl)
+                setAudioUrl(audioUrl)
+                setAudioLoading(false)
+              }}
+            >
+              <span
+                className={`fas ${audioLoading ? 'fa-spinner' : 'fa-play'}`}
+              />
+            </button>
+            <div className="audio-container d-flex justify-content-center align-items-center">
+              <audio
+                hidden={!audioUrl}
+                src={audioUrl}
+                controls={!!audioUrl}
+                ref={audioRef}
+                className="form-control" // This class adds Bootstrap styling
+                style={{ width: '100%' }} // Ensure the audio control spans the full width of its container
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            title={`${base64String ? 'Change image' : 'Upload image'}`}
+            className={`btn-dark mx-2 btn ${
+              base64String ? 'btn-secondary' : ''
+            }`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <span className={`fa-image ${base64String ? 'far' : 'fas'}`} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSubmit}
+              hidden
+              id="fileInput"
+            />
+          </button>
+
+          <OCRButton
+            setLoading={(loading) => setLoading(loading ? index : -1)}
           />
         </div>
         <DrawContainer toShake={toShake} prompt={text} />

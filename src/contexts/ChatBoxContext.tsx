@@ -5,6 +5,7 @@ export type aChatBox = {
   index: number
   text: string
   base64String?: string
+  setLoading: (loading: number) => void
   previewing?: boolean
   role: string
   //UI props
@@ -46,7 +47,6 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
       if (chatBoxsRef.current.length > 0) {
         const lastChatBox = chatBoxsRef.current[chatBoxsRef.current.length - 1]
         console.log('lastChatBox', lastChatBox)
-        
       }
     }
 
