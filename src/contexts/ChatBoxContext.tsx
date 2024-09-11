@@ -1,5 +1,8 @@
 import { FunctionComponent, createContext } from 'preact'
 import { useContext, useEffect, useRef, useState } from 'preact/hooks'
+import { useLocation, useNavigate } from 'react-router-dom'
+import queryString from 'query-string'
+import { getMemory, parseMemory, setDocumentTitle } from '../utils/utils'
 
 export type aChatBox = {
   index: number
@@ -24,6 +27,9 @@ interface ChatBoxContextType {
   }) => aChatBox | void
   updateChatBox: (chatbox: Partial<aChatBox>) => void
   deleteChatBox: (index: number) => void
+  systemText: string
+  setSystemText: (systemText: string) => void
+  setChatBoxs: (chatBoxs: aChatBox[]) => void
 }
 const initialChatBox = {
   index: 0,
@@ -34,19 +40,41 @@ const ChatBoxContext = createContext<ChatBoxContextType>(undefined!)
 // Create a context
 
 export const ChatBoxProvider: FunctionComponent = ({ children }) => {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [chatBoxs, setChatBoxs] = useState<aChatBox[]>([initialChatBox])
+  const [systemText, setSystemText] = useState<string>('')
   const chatBoxsRef = useRef(chatBoxs)
 
+  const updateURL = (memory?: string) => {
+    const newQueryString = queryString.stringify({
+      memory
+    })
+    navigate({ search: newQueryString })
+  }
+
+  useEffect(() => {
+    const memory = queryString.parse(location.search).memory
+    const parsedMemory = parseMemory(memory as string)
+    if (parsedMemory) {
+      setSystemText(parsedMemory.s)
+      setChatBoxs(parsedMemory.c)
+      setDocumentTitle(chatBoxs)
+    }
+  }, [])
   // Update the ref whenever chatBoxs changes
   useEffect(() => {
     chatBoxsRef.current = chatBoxs
-  }, [chatBoxs])
+
+    setDocumentTitle(chatBoxs)
+    updateURL(getMemory(chatBoxs, systemText))
+  }, [chatBoxs, systemText])
 
   useEffect(() => {
     const handleFocus = () => {
       if (chatBoxsRef.current.length > 0) {
         const lastChatBox = chatBoxsRef.current[chatBoxsRef.current.length - 1]
-        console.log('lastChatBox', lastChatBox)
+        // console.log('lastChatBox', lastChatBox)
       }
     }
 
@@ -117,7 +145,15 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
     })
   }
 
-  const value = { chatBoxs, addChatBox, updateChatBox, deleteChatBox }
+  const value = {
+    chatBoxs,
+    addChatBox,
+    updateChatBox,
+    deleteChatBox,
+    systemText,
+    setSystemText,
+    setChatBoxs
+  }
 
   return (
     <ChatBoxContext.Provider value={value}>{children}</ChatBoxContext.Provider>

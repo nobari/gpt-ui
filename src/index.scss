@@ -1,9 +1,9 @@
+//font-awesome
+$fa-font-path: '@fortawesome/fontawesome-free/webfonts';
 //bootstrap
 @import 'bootstrap/scss/bootstrap';
 
-//font-awesome
 // Update Font Awesome font path variable
-$fa-font-path: '@fortawesome/fontawesome-free/webfonts';
 @import '@fortawesome/fontawesome-free/scss/fontawesome';
 @import '@fortawesome/fontawesome-free/scss/solid';
 @import '@fortawesome/fontawesome-free/scss/regular';

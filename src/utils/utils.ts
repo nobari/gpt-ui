@@ -1,3 +1,5 @@
+import { aChatBox } from '../contexts/ChatBoxContext'
+import LZString from 'lz-string'
 
 export function deleteMessage(messageToDelete: HTMLButtonElement) {
   try {
@@ -164,4 +166,45 @@ export function copyTextToClipboard(text: string) {
       console.error('Async: Could not copy text: ', err)
     }
   )
+}
+
+export const getMemory = (chatBoxs: aChatBox[], systemText: string) => {
+  if (chatBoxs.length == 1 && !chatBoxs[0].text && !chatBoxs[0].base64String)
+    return
+  const memorizedChatBoxs = JSON.stringify({
+    s: systemText,
+    c: chatBoxs.map((chatBox) => ({
+      text: chatBox.text,
+      role: chatBox.role,
+      base64String: chatBox.base64String,
+      previewing: chatBox.previewing,
+      index: chatBox.index
+    }))
+  })
+  const memory = LZString.compressToEncodedURIComponent(memorizedChatBoxs)
+  return memory
+}
+
+export const parseMemory = (memory: string) => {
+  try {
+    if (memory) {
+      const decompressedMemory = LZString.decompressFromEncodedURIComponent(
+        memory as string
+      )
+      console.log('decompressedMemory:', decompressedMemory)
+      if (decompressedMemory) {
+        const parsedMemory: { s: string; c: aChatBox[] } =
+          JSON.parse(decompressedMemory)
+        return parsedMemory
+      }
+    }
+  } catch (e) {
+    console.error('Error parsing memory:', e)
+  }
+}
+export const getTitle = (chatBoxs: aChatBox[]) => {
+  return chatBoxs?.[0]?.text?.trim() || 'Sapata | ChatGPT'
+}
+export const setDocumentTitle = (chatBoxs: aChatBox[]) => {
+  document.title = getTitle(chatBoxs)
 }

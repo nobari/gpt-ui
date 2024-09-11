@@ -76,7 +76,10 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
       }, 500)
     }
     const log = (...msg: any) => {
-      console.log(`chatbox ${index}:`, ...msg)
+      //if dev, log to console
+      if (import.meta.env.DEV) {
+        console.log(`chatbox ${index}:`, ...msg)
+      }
     }
 
     const placeholder = useMemo(() => {
@@ -85,7 +88,7 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
     }, [setAsAssistant, role, loading])
 
     const update = (aChatBox: Partial<aChatBox>) => {
-      log('update chatbox:', aChatBox)
+      // log('update chatbox:', aChatBox)
       aChatBox.index = index
       updateChatBox(aChatBox)
     }

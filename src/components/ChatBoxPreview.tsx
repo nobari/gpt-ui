@@ -107,7 +107,7 @@ const ChatBoxPreview: FC<ChatBoxPreviewProps> = ({
 
     // Convert markdown to HTML first (assuming getPreviewHtml does this)
     const parsedMarkdown = await getPreviewHtml(text!)
-    console.log('parsedMarkdown:', parsedMarkdown)
+    // console.log('parsedMarkdown:', parsedMarkdown)
 
     return `<div>${highlightPreCode(parsedMarkdown)}</div>`
   }, [text])

@@ -14,6 +14,8 @@ import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
 import { version } from '../package.json'
 import { transcribeTextFromImage } from './utils/google'
+import { getMemory, getTitle, parseMemory } from './utils/utils'
+import { SaveMemory } from './components/MemoryButton'
 
 export const chatgpt = new Generator()
 
@@ -22,10 +24,16 @@ export function App() {
 }
 
 function ChatForm() {
-  const { chatBoxs, addChatBox, updateChatBox, deleteChatBox } = useChatBox()
+  const {
+    chatBoxs,
+    addChatBox,
+    updateChatBox,
+    deleteChatBox,
+    systemText,
+    setSystemText
+  } = useChatBox()
   const [jb, setJB] = useState(false)
   const [loading, setLoading] = useState<number>(-1)
-  const [systemText, setSystemText] = useState<string>()
 
   const handleSubmit = async (e?: any) => {
     if (e) e.preventDefault()
@@ -135,6 +143,7 @@ function ChatForm() {
       <RecordingSection />
       <AddMessageButton />
       <textarea
+        value={systemText}
         className="form-control message-text"
         rows={1}
         spellCheck={false}
@@ -153,6 +162,7 @@ function ChatForm() {
           }
         }}
       />
+      <SaveMemory />
     </form>
   )
 }
@@ -179,7 +189,7 @@ function RefreshButton() {
     <button
       type="button"
       className="btn btn-secondary reload"
-      onClick={() => window.location.reload()}
+      onClick={() => (window.location.href = '/')}
     >
       <span className="fas fa-sync"></span>
     </button>

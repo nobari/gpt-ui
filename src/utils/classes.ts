@@ -126,7 +126,7 @@ export class Generator {
       }
 
       const chatCompletion = await this.stream.finalChatCompletion()
-      console.log(chatCompletion)
+      // console.log(chatCompletion)
 
       // currentChatBox.text = chatCompletion.choices[0].message.content
       // currentChatBox.preview = await getPreviewHtml(currentChatBox.text)
