@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import { aChatBox, useChatBox } from '../contexts/ChatBoxContext'
 import { getMemory, getTitle, parseMemory } from '../utils/utils'
+import queryString from 'query-string'
 
 type TMemories = { title: string; memory: string }[]
 const ShowMemories = ({
@@ -28,7 +29,7 @@ const ShowMemories = ({
   if (memories.length === 0) return null
   return (
     <>
-      <button type="button" className="btn btn-info" onClick={handleShow}>
+      <button type="button" className="btn btn-info btn-sm" onClick={handleShow}>
         Show Memories
       </button>
       <div
@@ -114,6 +115,26 @@ export const SaveMemory = () => {
       setMemories(parsedMemories)
     }
   }, [])
+  const toastRef = useRef<HTMLDivElement>(null)
+  const shareAndCopy = () => {
+    const memory = getMemory(chatBoxs, systemText)
+    if (!memory) {
+      window.alert('Write something first!')
+      return
+    }
+
+    const newQueryString = queryString.stringify({
+      memory
+    })
+    // add memory as the search param of the current url
+    const url = `${window.location.href}?${newQueryString}`
+    console.log(url)
+    navigator.clipboard.writeText(url).then(() => {
+      if (toastRef.current) {
+        toastRef.current.classList.add('show')
+      }
+    })
+  }
 
   return (
     <div>
@@ -121,13 +142,40 @@ export const SaveMemory = () => {
       <button
         type="button"
         title="Save to local storage"
-        className="btn btn-dark"
+        className="btn btn-dark btn-sm"
         onClick={() => {
           saveToLocalStorage()
         }}
       >
         <span className="fas fa-save"></span> Save Locally
       </button>
+      {/* share button */}
+      <button
+        type="button"
+        className="btn btn-secondary btn-sm"
+        onClick={() => {
+          shareAndCopy()
+        }}
+      >
+        <span className="fas fa-share"></span> Share
+      </button>
+      {/* Toast notification */}
+      <div
+        ref={toastRef}
+        className="toast position-fixed p-3"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{ zIndex: 11 }}
+      >
+        <button
+          type="button"
+          className="btn-close btn-sm position-absolute top-0 end-0 m-2"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+        <div className="toast-body">copied to clipboard 📋 ready to share</div>
+      </div>
     </div>
   )
 }

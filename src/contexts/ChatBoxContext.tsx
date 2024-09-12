@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef, useState } from 'preact/hooks'
 import { useLocation, useNavigate } from 'react-router-dom'
 import queryString from 'query-string'
 import { getMemory, parseMemory, setDocumentTitle } from '../utils/utils'
+import { debounce } from 'lodash'
 
 export type aChatBox = {
   index: number
@@ -62,12 +63,18 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
       setDocumentTitle(chatBoxs)
     }
   }, [])
+  const debouncedUpdateURL = useRef(
+    debounce((chatBoxs: aChatBox[], systemText: string) => {
+      updateURL(getMemory(chatBoxs, systemText))
+    }, 5000)
+  ).current
   // Update the ref whenever chatBoxs changes
   useEffect(() => {
     chatBoxsRef.current = chatBoxs
 
     setDocumentTitle(chatBoxs)
-    updateURL(getMemory(chatBoxs, systemText))
+    debouncedUpdateURL(chatBoxs, systemText)
+    // updateURL(getMemory(chatBoxs, systemText))
   }, [chatBoxs, systemText])
 
   useEffect(() => {

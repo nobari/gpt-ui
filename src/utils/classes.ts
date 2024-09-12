@@ -1,5 +1,4 @@
 import OpenAI from 'openai'
-import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream'
 import * as manageLS from './manageLocalStorage'
 import { decrypt, encrypt } from './cryptography'
 import {
@@ -10,6 +9,7 @@ import { aChatBox } from '../contexts/ChatBoxContext'
 import { chatgpt } from '../app'
 import { ImageGenerateParams } from 'openai/resources/images.mjs'
 import { SpeechCreateParams } from 'openai/resources/audio/speech.mjs'
+import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream'
 
 export const CONFIGS = {
   apiKeys: {
@@ -126,7 +126,7 @@ export class Generator {
       }
 
       const chatCompletion = await this.stream.finalChatCompletion()
-      // console.log(chatCompletion)
+      console.log(chatCompletion)
 
       // currentChatBox.text = chatCompletion.choices[0].message.content
       // currentChatBox.preview = await getPreviewHtml(currentChatBox.text)

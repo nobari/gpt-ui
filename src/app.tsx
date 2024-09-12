@@ -162,7 +162,6 @@ function ChatForm() {
           }
         }}
       />
-      <SaveMemory />
     </form>
   )
 }
@@ -254,6 +253,15 @@ function AddMessageButton() {
     </div>
   )
 }
+const FooterButtons = () => {
+  return (
+    <div className="d-flex justify-content-between align-items-center z-10">
+      <RefreshButton />
+      <SaveMemory />
+      <DownloadButtons />
+    </div>
+  )
+}
 function MainLayout() {
   useEffect(() => {
     // Setup logic to replace init()
@@ -263,10 +271,7 @@ function MainLayout() {
       <div className="container">
         <ChatBoxProvider>
           <ChatForm />
-          <div className="d-flex justify-content-between align-items-center">
-            <RefreshButton />
-            <DownloadButtons />
-          </div>
+          <FooterButtons />
         </ChatBoxProvider>
 
         <footer className="footer">
