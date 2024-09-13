@@ -168,7 +168,11 @@ export function copyTextToClipboard(text: string) {
   )
 }
 
-export const getMemory = (chatBoxs: aChatBox[], systemText: string) => {
+export const getMemory = (
+  chatBoxs: aChatBox[],
+  systemText: string,
+  withImage = false
+) => {
   if (chatBoxs.length == 1 && !chatBoxs[0].text && !chatBoxs[0].base64String)
     return
   const memorizedChatBoxs = JSON.stringify({
@@ -176,7 +180,7 @@ export const getMemory = (chatBoxs: aChatBox[], systemText: string) => {
     c: chatBoxs.map((chatBox) => ({
       text: chatBox.text,
       role: chatBox.role,
-      base64String: chatBox.base64String,
+      base64String: withImage ? chatBox.base64String : undefined,
       previewing: chatBox.previewing,
       index: chatBox.index
     }))

@@ -29,7 +29,11 @@ const ShowMemories = ({
   if (memories.length === 0) return null
   return (
     <>
-      <button type="button" className="btn btn-info btn-sm" onClick={handleShow}>
+      <button
+        type="button"
+        className="btn btn-info btn-sm"
+        onClick={handleShow}
+      >
         Show Memories
       </button>
       <div
@@ -89,7 +93,7 @@ export const SaveMemory = () => {
   const { chatBoxs, systemText } = useChatBox()
   const [memories, setMemories] = useState<TMemories>([])
   const saveToLocalStorage = () => {
-    const memory = getMemory(chatBoxs, systemText)
+    const memory = getMemory(chatBoxs, systemText, true)
     if (!memory) {
       window.alert('Write something first!')
       return
