@@ -68,6 +68,13 @@ a {
       white-space: pre-line;
     }
   }
+  .chat-box-actions {
+    gap: 4px;
+    height: 48px;
+    audio {
+      height: 100%;
+    }
+  }
 }
 
 .api-key-text {
@@ -276,5 +283,25 @@ html {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+  }
+}
+.modal {
+  .modal-dialog {
+    .modal-content {
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 0 10px 0 #e0e0e0;
+    }
+    .modal-body {
+      h6 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        // add a line below the h6
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 0.5rem;
+        //except the first h6
+        margin-top: 1rem;
+      }
+    }
   }
 }

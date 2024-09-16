@@ -1,23 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import './app.scss'
 import 'bootstrap'
-import { Generator, VOICES } from './utils/classes'
+import { chatgpt } from './utils/gpt'
 
-import {
-  ChatCompletionMessageParam,
-  ChatCompletionUserMessageParam
-} from 'openai/resources/chat/completions'
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 import { ChatBoxProvider, useChatBox } from './contexts/ChatBoxContext'
 import ChatBox from './components/ChatBox'
 import JBButton from './components/JBButton'
 import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
-import { version } from '../package.json'
-import { transcribeTextFromImage } from './utils/google'
-import { getMemory, getTitle, parseMemory } from './utils/utils'
 import { SaveMemory } from './components/MemoryButton'
-
-export const chatgpt = new Generator()
+import Footer from './components/Footer'
 
 export function App() {
   return <MainLayout />
@@ -273,13 +266,7 @@ function MainLayout() {
           <ChatForm />
           <FooterButtons />
         </ChatBoxProvider>
-
-        <footer className="footer">
-          <code>
-            <div>Model: {chatgpt.model}</div>
-            <div>Version: {version}</div>
-          </code>
-        </footer>
+        <Footer />
       </div>
     </div>
   )

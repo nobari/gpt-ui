@@ -1,5 +1,5 @@
 import { useRef } from 'preact/hooks'
-import { chatgpt } from '../app'
+import { chatgpt } from '../utils/gpt'
 import { useChatBox } from '../contexts/ChatBoxContext'
 import { transcribeTextFromImage } from '../utils/google'
 
@@ -40,7 +40,7 @@ export function OCRButton({
   return (
     <button
       type="button"
-      className="btn btn-secondary"
+      className="btn btn-secondary btn-sm"
       onClick={() => fileInputRef.current?.click()}
     >
       OCR/ACR

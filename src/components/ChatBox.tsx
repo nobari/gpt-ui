@@ -7,15 +7,16 @@ import {
   useState
 } from 'preact/hooks'
 import { aChatBox, useChatBox } from '../contexts/ChatBoxContext'
-import { Generator, VOICES } from '../utils/classes'
+import { roles } from '../utils/gpt'
 import { copyTextToClipboard } from '../utils/utils'
 import 'katex/dist/katex.min.css'
 
-import { chatgpt } from '../app'
-import DrawContainer from './DrawContainer'
+import { chatgpt } from '../utils/gpt'
+import DrawContainer from '../hooks/useDrawContainer'
 import TextareaAutosize from 'react-textarea-autosize'
 import ChatBoxPreview from './ChatBoxPreview'
 import { OCRButton } from './OCRButton'
+import useDrawContainer from '../hooks/useDrawContainer'
 
 interface ChatBoxProps extends aChatBox {
   setAsAssistant?: boolean
@@ -27,7 +28,7 @@ interface ChatBoxProps extends aChatBox {
 const getPlaceholder = (fetching = false, role: string) => {
   return fetching
     ? 'Fetching response...'
-    : role === Generator.roles.user.role
+    : role === roles.user.role
     ? 'Type your message here'
     : 'Enter an assistant message here.'
 }
@@ -53,8 +54,8 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
     const [audioLoading, setAudioLoading] = useState(false)
     const [audioUrl, setAudioUrl] = useState<string>()
     const { updateChatBox } = useChatBox()
-    const userRole = Generator.roles.user.role
-    const assistantRole = Generator.roles.assistant.role
+    const userRole = roles.user.role
+    const assistantRole = roles.assistant.role
     const focusTextbox = () => {
       textAreaRef.current?.focus()
     }
@@ -128,6 +129,20 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
       } finally {
       }
     }
+    const playAudio = async (e: any) => {
+      e.preventDefault()
+      setAudioLoading(true)
+      const textToSpeech = text.trim()
+      log('text:', textToSpeech)
+      const audioUrl = await chatgpt.tts(textToSpeech)
+      console.log('audio url:', audioUrl)
+      setAudioUrl(audioUrl)
+      setAudioLoading(false)
+    }
+    const { drawButton, drawContainer } = useDrawContainer({
+      toShake,
+      prompt: text
+    })
     return (
       <div className={`chat-box ${shaking ? 'shake' : ''}`}>
         <button
@@ -205,9 +220,9 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
           <span className="fas fa-trash" />
         </button>
 
-        <div className="d-flex justify-content-end">
+        <div className="chat-box-actions d-flex overflow-x-auto my-2 pb-2 h-48">
           <button
-            className="btn form-button copy-btn btn-dark"
+            className="btn form-button copy-btn btn-dark btn-sm"
             type="button"
             title="Copy to clipboard"
             onClick={async (e) => {
@@ -217,59 +232,37 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
             <span className="fas fa-clipboard" /> Copy
           </button>
 
-          <div class="d-inline-flex align-items-center gap-0 mx-2">
-            <select
-              className="form-select"
-              id="voiceSelect"
-              value={chatgpt.selectedVoice}
-              onChange={(e: any) => {
-                chatgpt.selectedVoice = e.target.value
-                setAudioUrl(undefined)
-              }}
-            >
-              {VOICES.map((voice) => (
-                <option key={voice} value={voice}>
-                  {voice} 🔊
-                </option>
-              ))}
-            </select>
+          <div className="d-inline-flex align-items-center gap-0 mx-2">
             <button
               id="playButton"
               disabled={audioLoading}
-              className="btn form-button play-btn btn-dark"
+              className="btn form-button play-btn btn-dark btn-sm"
               type="button"
               title="Play"
-              hidden={!!audioUrl}
-              onClick={async (e) => {
-                setAudioLoading(true)
-                const textToSpeech = text.trim()
-                log('text:', textToSpeech)
-                const audioUrl = await chatgpt.tts(textToSpeech)
-                console.log('audio url:', audioUrl)
-                setAudioUrl(audioUrl)
-                setAudioLoading(false)
-              }}
+              onClick={playAudio}
             >
               <span
-                className={`fas ${audioLoading ? 'fa-spinner' : 'fa-play'}`}
+                className={`fas ${
+                  audioUrl
+                    ? 'fa-refresh'
+                    : audioLoading
+                    ? 'fa-spinner'
+                    : 'fa-play'
+                }`}
               />
             </button>
-            <div className="audio-container d-flex justify-content-center align-items-center">
-              <audio
-                hidden={!audioUrl}
-                src={audioUrl}
-                controls={!!audioUrl}
-                ref={audioRef}
-                className="form-control" // This class adds Bootstrap styling
-                style={{ width: '100%' }} // Ensure the audio control spans the full width of its container
-              />
-            </div>
+            <audio
+              hidden={!audioUrl}
+              src={audioUrl}
+              controls={!!audioUrl}
+              ref={audioRef}
+            />
           </div>
 
           <button
             type="button"
             title={`${base64String ? 'Change image' : 'Upload image'}`}
-            className={`btn-dark mx-2 btn ${
+            className={`btn-dark btn btn-sm ${
               base64String ? 'btn-secondary' : ''
             }`}
             onClick={() => fileInputRef.current?.click()}
@@ -288,8 +281,9 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
           <OCRButton
             setLoading={(loading) => setLoading(loading ? index : -1)}
           />
+          {drawButton}
         </div>
-        <DrawContainer toShake={toShake} prompt={text} />
+        {drawContainer}
       </div>
     )
   }

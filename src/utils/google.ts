@@ -1,5 +1,4 @@
-import { chatgpt } from '../app'
-import { CONFIGS } from './classes'
+import { CONFIGS } from './gpt'
 
 export async function transcribeTextFromImage(file: File) {
   try {

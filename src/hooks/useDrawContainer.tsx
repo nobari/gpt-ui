@@ -1,35 +1,30 @@
 import { HTMLAttributes, FC, useState } from 'preact/compat'
-import { IMAGE_GEN_TYPES, ImageGen } from '../utils/classes'
-
-const imageGen = new ImageGen()
+import { chatgpt, CONFIGS } from '../utils/gpt'
 
 interface DrawContainerProps extends HTMLAttributes<HTMLDivElement> {
   prompt?: string
   toShake: () => void
 }
 
-const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
+const useDrawContainer = ({ prompt, toShake }: DrawContainerProps) => {
   const [images, setImages] = useState<
-    { type: IMAGE_GEN_TYPES; url?: string }[]
+    { config: typeof CONFIGS.image; url?: string }[]
   >([])
-  const draw = async (e: Event, type: IMAGE_GEN_TYPES) => {
+  const draw = async (e: Event) => {
+    const config = CONFIGS.image
     e.preventDefault()
     if (!prompt) return toShake()
-    await toDraw(type)
-  }
-
-  async function toDraw(type: IMAGE_GEN_TYPES = 'd') {
     // const existingImgs = dalle.generatedImgs;// drawEl.querySelectorAll(".img-wrapper").length;
     // const collectionId = Date.now();
     const ids: number[] = []
     const offset = images.length
-    for (let i = 0; i < imageGen.n!; i++) {
+    for (let i = 0; i < config.n!; i++) {
       ids.push(i + offset)
-      images.push({ type })
+      images.push({ config })
     }
     setImages([...images])
     try {
-      const gens = await imageGen.getImages(prompt!, type)
+      const gens = await chatgpt.getImages(prompt!, config)
       if (!gens.length) throw 'no image'
       setImages((img) => {
         let imagesId = 0
@@ -42,8 +37,17 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
       console.log('error images:', e)
     }
   }
-
-  return (
+  const drawButton = (
+    <button
+      type="button"
+      className="btn form-button draw-btn btn-dark btn-sm"
+      title="Draw"
+      onClick={draw}
+    >
+      Draw 🌠
+    </button>
+  )
+  const drawContainer = (
     <div className="d-flex justify-content-center gap-2">
       {images && (
         <div className="drawings row">
@@ -59,12 +63,14 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
                 <p className="card-text">
                   <button
                     disabled={!image.url}
-                    className="btn btn-outline-success btn-circle"
+                    className="btn btn-outline-success btn-circle btn-sm"
                     type="button"
                     onClick={() => {
                       const link = document.createElement('a')
                       link.href = image.url!
-                      link.download = `sapata_${image.type}_${index + 1}.jpg`
+                      link.download = `sapata_${image.config.type}_${
+                        index + 1
+                      }.jpg`
                       document.body.appendChild(link) // Required for Firefox
                       link.click()
                       document.body.removeChild(link) // Required for Firefox
@@ -72,10 +78,10 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
                   >
                     <span className="fas fa-download"></span>
                   </button>
-                  {`${image.type}-${index + 1}`}
+                  {`${image.config.type}-${index + 1}`}
                   <button
                     disabled={!image.url}
-                    className="btn btn-outline-danger btn-circle"
+                    className="btn btn-outline-danger btn-circle btn-sm"
                     type="button"
                     onClick={() => {
                       const newImages = images.filter(
@@ -92,27 +98,12 @@ const DrawContainer: FC<DrawContainerProps> = ({ prompt, toShake }) => {
           ))}
         </div>
       )}
-      <button
-        type="button"
-        className="btn form-button draw-btn btn-dark"
-        title="Draw with Midjourney"
-        onClick={(e) => draw(e, 'm')}
-      >
-        Draw 🎇 M
-      </button>
-      <button
-        type="button"
-        className="btn form-button draw-btn btn-dark"
-        title="Draw with Dall-E"
-        onClick={(e) => draw(e, 'd')}
-      >
-        Draw 🌠 D
-      </button>
     </div>
   )
+  return { drawButton, drawContainer }
 }
 
-export default DrawContainer
+export default useDrawContainer
 
 /*
 
