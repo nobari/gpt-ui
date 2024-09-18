@@ -1,9 +1,9 @@
 import { FunctionComponent, createContext } from 'preact'
 import { useContext, useEffect, useRef, useState } from 'preact/hooks'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import queryString from 'query-string'
-import { getMemory, parseMemory, setDocumentTitle } from '../utils/utils'
-import { debounce } from 'lodash'
+import { parseMemory, setDocumentTitle, updateURL } from '../utils/utils'
+import { EVENTS } from '../utils/events'
 
 export type aChatBox = {
   index: number
@@ -42,17 +42,15 @@ const ChatBoxContext = createContext<ChatBoxContextType>(undefined!)
 
 export const ChatBoxProvider: FunctionComponent = ({ children }) => {
   const location = useLocation()
-  const navigate = useNavigate()
   const [chatBoxs, setChatBoxs] = useState<aChatBox[]>([initialChatBox])
   const [systemText, setSystemText] = useState<string>('')
   const chatBoxsRef = useRef(chatBoxs)
+  const systemTextRef = useRef(systemText)
 
-  const updateURL = (memory?: string) => {
-    const newQueryString = queryString.stringify({
-      memory
-    })
-    navigate({ search: newQueryString })
-  }
+  const updateMemory = () =>
+    setTimeout(() => {
+      updateURL(chatBoxsRef.current, systemTextRef.current)
+    }, 300) // 300ms delay to ensure the chatBoxs and systemText are updated
 
   useEffect(() => {
     const memory = queryString.parse(location.search).memory
@@ -62,36 +60,20 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
       setChatBoxs(parsedMemory.c)
       setDocumentTitle(chatBoxs)
     }
+    window.addEventListener(EVENTS.UPDATE_URL_MEMORY, updateMemory)
+    window.addEventListener(EVENTS.UPDATE_TITLE, () => {
+      console.log(`event:${EVENTS.UPDATE_TITLE}`)
+      setDocumentTitle(chatBoxsRef.current)
+    })
   }, [])
-  const debouncedUpdateURL = useRef(
-    debounce((chatBoxs: aChatBox[], systemText: string) => {
-      updateURL(getMemory(chatBoxs, systemText))
-    }, 5000)
-  ).current
   // Update the ref whenever chatBoxs changes
   useEffect(() => {
     chatBoxsRef.current = chatBoxs
-
-    setDocumentTitle(chatBoxs)
-    debouncedUpdateURL(chatBoxs, systemText)
-    // updateURL(getMemory(chatBoxs, systemText))
-  }, [chatBoxs, systemText])
-
+  }, [chatBoxs])
   useEffect(() => {
-    const handleFocus = () => {
-      if (chatBoxsRef.current.length > 0) {
-        const lastChatBox = chatBoxsRef.current[chatBoxsRef.current.length - 1]
-        // console.log('lastChatBox', lastChatBox)
-      }
-    }
+    systemTextRef.current = systemText
+  }, [systemText])
 
-    window.addEventListener('focus', handleFocus)
-
-    // Cleanup function to remove the event listener
-    return () => {
-      window.removeEventListener('focus', handleFocus)
-    }
-  }, [])
   const addChatBox = ({
     chatbox,
     passive
@@ -127,6 +109,7 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
       ...chatbox
     } as aChatBox
     setChatBoxs([...currentChatBoxs, chatBoxToAdd])
+    updateMemory()
     return chatBoxToAdd
   }
 
@@ -150,6 +133,7 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
       }
       return newChatBoxs
     })
+    updateMemory()
   }
 
   const value = {

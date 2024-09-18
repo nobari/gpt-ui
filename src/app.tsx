@@ -11,6 +11,7 @@ import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
 import { SaveMemory } from './components/MemoryButton'
 import Footer from './components/Footer'
+import { EVENTS } from './utils/events'
 
 export function App() {
   return <MainLayout />

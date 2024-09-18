@@ -10,6 +10,7 @@ import { ImageGenerateParams } from 'openai/resources/images.mjs'
 import { SpeechCreateParams } from 'openai/resources/audio/speech.mjs'
 import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream'
 import { TranscriptionCreateParams } from 'openai/resources/audio/transcriptions.mjs'
+import { EVENTS } from './events'
 type AdditionalImageGenParams = {
   /**
    * m for midjourney and d for dall-e

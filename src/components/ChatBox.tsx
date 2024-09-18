@@ -12,11 +12,11 @@ import { copyTextToClipboard } from '../utils/utils'
 import 'katex/dist/katex.min.css'
 
 import { chatgpt } from '../utils/gpt'
-import DrawContainer from '../hooks/useDrawContainer'
 import TextareaAutosize from 'react-textarea-autosize'
 import ChatBoxPreview from './ChatBoxPreview'
 import { OCRButton } from './OCRButton'
 import useDrawContainer from '../hooks/useDrawContainer'
+import { EVENTS } from '../utils/events'
 
 interface ChatBoxProps extends aChatBox {
   setAsAssistant?: boolean
@@ -188,7 +188,11 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
             }
           }}
           onChange={(e: any) => {
-            update({ text: e.target.value })
+            const newText = e.target.value
+            update({ text: newText })
+            if (index === 0) {
+              window.dispatchEvent(new Event(EVENTS.UPDATE_TITLE))
+            }
             if (audioUrl) setAudioUrl(undefined)
           }}
           value={text}

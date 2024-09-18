@@ -1,3 +1,4 @@
+import queryString from 'query-string'
 import { aChatBox } from '../contexts/ChatBoxContext'
 import LZString from 'lz-string'
 
@@ -168,7 +169,7 @@ export function copyTextToClipboard(text: string) {
   )
 }
 
-export const getMemory = (
+const getMemory = (
   chatBoxs: aChatBox[],
   systemText: string,
   withImage = false
@@ -185,6 +186,7 @@ export const getMemory = (
       index: chatBox.index
     }))
   })
+  console.log('number of chatBoxs:', chatBoxs.length)
   const memory = LZString.compressToEncodedURIComponent(memorizedChatBoxs)
   return memory
 }
@@ -199,6 +201,7 @@ export const parseMemory = (memory: string) => {
       if (decompressedMemory) {
         const parsedMemory: { s: string; c: aChatBox[] } =
           JSON.parse(decompressedMemory)
+        console.log('number of chatBoxs:', parsedMemory.c.length)
         return parsedMemory
       }
     }
@@ -211,4 +214,24 @@ export const getTitle = (chatBoxs: aChatBox[]) => {
 }
 export const setDocumentTitle = (chatBoxs: aChatBox[]) => {
   document.title = getTitle(chatBoxs)
+}
+export const updateURL = (
+  chatBoxs: aChatBox[],
+  systemText: string,
+  withImage = false
+) => {
+  console.log('chatBoxs:', JSON.parse(JSON.stringify(chatBoxs)))
+  const memory = getMemory(chatBoxs, systemText, withImage)
+  if (!memory) {
+    window.alert('Write something first!')
+    return { url: '', memory: '' }
+  }
+  const newQueryString = queryString.stringify({
+    memory
+  })
+  console.log('window.location.href:', window.location.href)
+  const url = `${window.location.origin}?${newQueryString}`
+  window.history.pushState({ path: url }, '', url)
+  console.log('url:', url)
+  return { url, memory }
 }
