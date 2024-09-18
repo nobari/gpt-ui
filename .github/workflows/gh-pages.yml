@@ -44,7 +44,7 @@ jobs:
           git config user.email "github-actions@github.com"
 
       - name: Bump Minor Version
-        run: yarn version --minor --no-git-tag-version
+        run: yarn version -i minor
 
       - name: Push Version Bump Commit
         run: |
