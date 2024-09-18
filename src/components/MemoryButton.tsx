@@ -7,10 +7,12 @@ const ShowMemories = ({
   memories,
   setMemories,
   showModal,
-  handleClose
+  handleClose,
+  handleDelete
 }: {
   memories: TMemories
   setMemories: (memories: TMemories) => void
+  handleDelete: (index: number) => void
   showModal: boolean
   handleClose: () => void
 }) => {
@@ -22,10 +24,7 @@ const ShowMemories = ({
     setSystemText(parsedMemory.s)
     handleClose()
   }
-  const handleDelete = (index: number) => {
-    const newMemories = memories.filter((_, i) => i !== index)
-    setMemories(newMemories)
-  }
+
   if (memories.length === 0) return null
   return (
     <div
@@ -134,7 +133,11 @@ export const SaveMemory = () => {
     fetchMemories()
     setShowModal(true)
   }
-
+  const handleDelete = (index: number) => {
+    const memories = fetchMemories()
+    memories.splice(index, 1)
+    storeMemories(memories)
+  }
   return (
     <div>
       <button
@@ -149,6 +152,7 @@ export const SaveMemory = () => {
         setMemories={setMemories}
         showModal={showModal}
         handleClose={handleClose}
+        handleDelete={handleDelete}
       />
       <button
         type="button"
