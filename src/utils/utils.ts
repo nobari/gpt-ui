@@ -201,6 +201,7 @@ export const parseMemory = (memory: string) => {
       if (decompressedMemory) {
         const parsedMemory: { s: string; c: aChatBox[] } =
           JSON.parse(decompressedMemory)
+        setDocumentTitle(parsedMemory.c)
         console.log('number of chatBoxs:', parsedMemory.c.length)
         return parsedMemory
       }

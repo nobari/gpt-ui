@@ -58,7 +58,6 @@ export const ChatBoxProvider: FunctionComponent = ({ children }) => {
     if (parsedMemory) {
       setSystemText(parsedMemory.s)
       setChatBoxs(parsedMemory.c)
-      setDocumentTitle(chatBoxs)
     }
     window.addEventListener(EVENTS.UPDATE_URL_MEMORY, updateMemory)
     window.addEventListener(EVENTS.UPDATE_TITLE, () => {

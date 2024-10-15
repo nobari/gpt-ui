@@ -73,28 +73,38 @@ function changeSec(key: string, newObj: any) {
   console.log('new ENCODED_SEC:' + enc)
   return enc
 }
-function ensureApiKey() {
+function wrongKey(preemptive: boolean = true) {
+  if (preemptive) {
+    window.location.reload()
+    return false
+  } else {
+    window.alert(
+      'wrong key, when you wanna generate we ask you to pass the key again'
+    )
+    return true
+  }
+}
+function checkKey(key?: string | null) {
+  if (!key) return false
+  try {
+    const json = JSON.parse(decrypt(ENCODED_SEC, key))
+    if (json.openai) {
+      CONFIGS.apiKeys = json
+      manageLS.setAPIKeys(json)
+      return true
+    }
+  } catch (e) {}
+  return false
+}
+function ensureApiKey(preemptive: boolean = true) {
   // initialize elements
   CONFIGS.apiKeys = manageLS.getAPIKeys()
 
-  while (!CONFIGS.apiKeys) {
-    const key = window.prompt('pass')
-    try {
-      if (key) {
-        const json = JSON.parse(decrypt(ENCODED_SEC, key))
-        if (!json) {
-          window.location.reload()
-        } else {
-          CONFIGS.apiKeys = json
-          manageLS.setAPIKeys(json)
-        }
-      } else {
-        window.location.reload()
-      }
-    } catch (e) {
-      window.location.reload()
-    }
+  const key = window.prompt('pass')
+  if (checkKey(key) || wrongKey(preemptive)) {
+    return
   }
+  ensureApiKey(preemptive)
 }
 export class payloadRole {
   role: string
@@ -119,15 +129,28 @@ class Generator {
   private static instance: Generator
   endPoint: string = 'https://api.openai.com/v1/chat/completions'
 
-  openai: OpenAI
+  openai: OpenAI | undefined
   stream: ChatCompletionStream | undefined
 
+  getOpenAI() {
+    if (!this.openai) {
+      ensureApiKey()
+      this.openai = new OpenAI({
+        apiKey: CONFIGS.apiKeys.openai,
+        dangerouslyAllowBrowser: true
+      })
+    }
+    return this.openai
+  }
   private constructor() {
-    ensureApiKey()
-    this.openai = new OpenAI({
-      apiKey: CONFIGS.apiKeys.openai,
-      dangerouslyAllowBrowser: true
-    })
+    if (window.location.search.includes('memory')) return
+    ensureApiKey(false)
+    if (CONFIGS.apiKeys.openai) {
+      this.openai = new OpenAI({
+        apiKey: CONFIGS.apiKeys.openai,
+        dangerouslyAllowBrowser: true
+      })
+    }
   }
   public static getInstance(): Generator {
     if (!Generator.instance) {
@@ -143,7 +166,7 @@ class Generator {
   ) => {
     try {
       gtagLog(payloadMessages[payloadMessages.length - 1].content as string) // Pass the content of the textbox as the event value
-      this.stream = await this.openai.beta.chat.completions.stream({
+      this.stream = await this.getOpenAI().beta.chat.completions.stream({
         model: CONFIGS.text.model,
         temperature: CONFIGS.text.temperature,
         messages: toJB ? [JBLoad, ...payloadMessages] : payloadMessages,
@@ -193,14 +216,14 @@ class Generator {
   }
 
   async stt(audioFile: File) {
-    const response = await chatgpt.openai.audio.transcriptions.create({
+    const response = await this.getOpenAI().audio.transcriptions.create({
       file: audioFile,
       model: CONFIGS.stt.model
     })
     return response.text
   }
   async tts(text: string) {
-    const response = await chatgpt.openai.audio.speech.create({
+    const response = await this.getOpenAI().audio.speech.create({
       model: CONFIGS.tts.model,
       input: text,
       voice: CONFIGS.tts.voice,
@@ -227,7 +250,7 @@ class Generator {
     console.log('draw image:', prompt)
     let headers, body
     if (config.type == 'd') {
-      const res = await chatgpt.openai.images.generate({
+      const res = await this.getOpenAI().images.generate({
         prompt,
         model: config.model,
         n: config.n,
