@@ -7,25 +7,19 @@ import { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 import { ChatBoxProvider, useChatBox } from './contexts/ChatBoxContext'
 import ChatBox from './components/ChatBox'
 import JBButton from './components/JBButton'
-import { DOWNLOAD_TYPES, downloadWrapper } from './utils/export'
 import AudioRecorder from './components/AudioRecorder'
-import { SaveMemory } from './components/MemoryButton'
 import Footer from './components/Footer'
-import { EVENTS } from './utils/events'
+import { setDocumentTitle } from './utils/utils'
+import { Accordion } from './components/Accordion'
+import { AdvancedOptions } from './components/AdvancedOptions'
 
 export function App() {
   return <MainLayout />
 }
 
 function ChatForm() {
-  const {
-    chatBoxs,
-    addChatBox,
-    updateChatBox,
-    deleteChatBox,
-    systemText,
-    setSystemText
-  } = useChatBox()
+  const { chatBoxs, addChatBox, updateChatBox, deleteChatBox, systemText } =
+    useChatBox()
   const [jb, setJB] = useState(false)
   const [loading, setLoading] = useState<number>(-1)
 
@@ -135,24 +129,15 @@ function ChatForm() {
         </button>
       </div>
       <RecordingSection />
-      <AddMessageButton />
-      <textarea
-        value={systemText}
-        className="form-control message-text"
-        rows={1}
-        spellCheck={false}
-        placeholder="Any instruction? such as act as a native Japanese translator"
-        onChange={(e) => {
-          const value = (e.target as HTMLTextAreaElement).value.trim()
-          setSystemText(value)
-        }}
-      ></textarea>
       <AudioRecorder
         onRecorded={async (url, file) => {
           console.log(url, file)
+          setLoading(chatBoxs.length)
           const text = await chatgpt.stt(file)
+          setLoading(-1)
           if (text) {
             addChatBox({ chatbox: { text, role: 'user' } })
+            setDocumentTitle(chatBoxs)
           }
         }}
       />
@@ -174,50 +159,6 @@ function Loading() {
       >
         Stop Generating
       </button>
-    </div>
-  )
-}
-function RefreshButton() {
-  return (
-    <button
-      type="button"
-      className="btn btn-secondary reload"
-      onClick={() => (window.location.href = '/')}
-    >
-      <span className="fas fa-sync"></span>
-    </button>
-  )
-}
-function DownloadButtons() {
-  const { chatBoxs } = useChatBox()
-  const downloadTypes = useMemo(() => {
-    return (
-      <ul class="dropdown-menu">
-        {(['md', 'html', 'py'] as DOWNLOAD_TYPES[]).map((type) => (
-          <li>
-            <button
-              type="button"
-              class="dropdown-item"
-              onClick={(e) => downloadWrapper(chatBoxs, type)}
-            >
-              {type == 'md' ? 'Markdown' : type == 'html' ? 'HTML' : 'Python'}
-            </button>
-          </li>
-        ))}
-      </ul>
-    )
-  }, [chatBoxs])
-  return (
-    <div class="btn-group" role="group">
-      <button
-        type="button"
-        class="btn btn-dark dropdown-toggle"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-      >
-        <span className="fas fa-download"></span> Download
-      </button>
-      {downloadTypes}
     </div>
   )
 }
@@ -247,15 +188,6 @@ function AddMessageButton() {
     </div>
   )
 }
-const FooterButtons = () => {
-  return (
-    <div className="d-flex justify-content-between align-items-center z-10">
-      <RefreshButton />
-      <SaveMemory />
-      <DownloadButtons />
-    </div>
-  )
-}
 function MainLayout() {
   useEffect(() => {
     // Setup logic to replace init()
@@ -265,9 +197,12 @@ function MainLayout() {
       <div className="container">
         <ChatBoxProvider>
           <ChatForm />
-          <FooterButtons />
+
+          <Accordion title="Advanced Options" id="advancedOptions">
+            <AdvancedOptions />
+            <Footer />
+          </Accordion>
         </ChatBoxProvider>
-        <Footer />
       </div>
     </div>
   )

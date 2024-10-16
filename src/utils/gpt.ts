@@ -99,12 +99,12 @@ function checkKey(key?: string | null) {
 function ensureApiKey(preemptive: boolean = true) {
   // initialize elements
   CONFIGS.apiKeys = manageLS.getAPIKeys()
-
+  if (CONFIGS.apiKeys) return CONFIGS.apiKeys
   const key = window.prompt('pass')
   if (checkKey(key) || wrongKey(preemptive)) {
-    return
+    return CONFIGS.apiKeys
   }
-  ensureApiKey(preemptive)
+  return ensureApiKey(preemptive)
 }
 export class payloadRole {
   role: string
@@ -145,7 +145,7 @@ class Generator {
   private constructor() {
     if (window.location.search.includes('memory')) return
     ensureApiKey(false)
-    if (CONFIGS.apiKeys.openai) {
+    if (CONFIGS.apiKeys?.openai) {
       this.openai = new OpenAI({
         apiKey: CONFIGS.apiKeys.openai,
         dangerouslyAllowBrowser: true

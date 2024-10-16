@@ -1,6 +1,63 @@
-import { useState } from 'preact/hooks'
+import { useState, useRef } from 'preact/hooks'
 import { version } from '../../package.json'
 import { chatgpt, CONFIGS } from '../utils/gpt'
+import { updateURL } from '../utils/utils'
+import { useChatBox } from '../contexts/ChatBoxContext'
+
+const ShareButton = () => {
+  const { chatBoxs, systemText } = useChatBox()
+  const toastRef = useRef<HTMLDivElement>(null)
+  const shareAndCopy = () => {
+    const { url } = updateURL(chatBoxs, systemText)
+
+    navigator.clipboard.writeText(url).then(() => {
+      if (toastRef.current) {
+        toastRef.current.classList.add('show')
+      }
+    })
+  }
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn-dark"
+        onClick={shareAndCopy}
+      >
+        <span className="fas fa-share me-2"></span>
+        Share
+      </button>
+      {/* Toast notification */}
+      <div
+        ref={toastRef}
+        className="toast position-fixed p-3"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{ zIndex: 11 }}
+      >
+        <button
+          type="button"
+          className="btn-close btn-sm position-absolute top-0 end-0 m-2"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+        <div className="toast-body">copied to clipboard 📋 ready to share</div>
+      </div>
+    </>
+  )
+}
+
+const RefreshButton = () => {
+  return (
+    <button
+      type="button"
+      className="btn btn-warning reload"
+      onClick={() => (window.location.href = '/')}
+    >
+      <span className="fas fa-sync"></span>
+    </button>
+  )
+}
 
 const Footer = () => {
   const availableModels: (typeof CONFIGS.text)['model'][] = [
@@ -60,16 +117,19 @@ const Footer = () => {
   }
 
   return (
-    <footer className="footer">
-      <button
-        type="button"
-        className="btn btn-primary"
-        onClick={() => setShowModal(true)}
-      >
-        Settings
-      </button>
-      <code>v{version}</code>
-
+    <>
+      <div className="footer">
+        <ShareButton />
+        <RefreshButton />
+        <button
+          type="button"
+          className="btn btn-outline-danger me-2"
+          onClick={() => setShowModal(true)}
+        >
+          <span className="fas fa-cog"></span>
+        </button>
+        <code>v{version}</code>
+      </div>
       <div
         className={`modal fade ${showModal ? 'show' : ''}`}
         tabIndex={showModal ? 0 : -1}
@@ -240,7 +300,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
+    </>
   )
 }
 

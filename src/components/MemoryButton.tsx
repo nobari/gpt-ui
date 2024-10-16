@@ -119,18 +119,13 @@ export const SaveMemory = () => {
     setMemories(newMemories)
     localStorage.setItem('memories', JSON.stringify(newMemories))
   }
-  const toastRef = useRef<HTMLDivElement>(null)
-  const shareAndCopy = () => {
-    const { url } = updateURL(chatBoxs, systemText)
-
-    navigator.clipboard.writeText(url).then(() => {
-      if (toastRef.current) {
-        toastRef.current.classList.add('show')
-      }
-    })
-  }
+  
   const handleShow = () => {
-    fetchMemories()
+    const memories = fetchMemories()
+    if (memories.length === 0) {
+      window.alert('No memories to show!')
+      return
+    }
     setShowModal(true)
   }
   const handleDelete = (index: number) => {
@@ -139,7 +134,7 @@ export const SaveMemory = () => {
     storeMemories(memories)
   }
   return (
-    <div>
+    <div className="btn-group" role="group">
       <button
         type="button"
         className="btn btn-info btn-sm"
@@ -164,33 +159,8 @@ export const SaveMemory = () => {
       >
         <span className="fas fa-save"></span> Save Locally
       </button>
-      {/* share button */}
-      <button
-        type="button"
-        className="btn btn-secondary btn-sm"
-        onClick={() => {
-          shareAndCopy()
-        }}
-      >
-        <span className="fas fa-share"></span> Share
-      </button>
-      {/* Toast notification */}
-      <div
-        ref={toastRef}
-        className="toast position-fixed p-3"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        style={{ zIndex: 11 }}
-      >
-        <button
-          type="button"
-          className="btn-close btn-sm position-absolute top-0 end-0 m-2"
-          data-bs-dismiss="toast"
-          aria-label="Close"
-        ></button>
-        <div className="toast-body">copied to clipboard 📋 ready to share</div>
-      </div>
+      
     </div>
   )
 }
+

@@ -148,7 +148,7 @@ const ChatBox = forwardRef<{ focusTextbox: () => void }, ChatBoxProps>(
         <button
           className="btn btn-outline-secondary role-switch form-button"
           type="button"
-          title="Switch Role"
+          title={`Switch Role to ${role == 'assistant' ? 'User' : 'Assistant'}`}
           tabIndex={-1}
           onClick={() => {
             const currentRole = role
