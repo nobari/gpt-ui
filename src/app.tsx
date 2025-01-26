@@ -12,6 +12,7 @@ import Footer from './components/Footer'
 import { setDocumentTitle } from './utils/utils'
 import { Accordion } from './components/Accordion'
 import { AdvancedOptions } from './components/AdvancedOptions'
+import { AIMessage } from './types/ai.types'
 
 export function App() {
   return <MainLayout />
@@ -48,8 +49,8 @@ function ChatForm() {
       chatbox: {
         loading: true,
         text: '',
-        role: 'assistant'
-      }
+        role: 'assistant',
+      },
     })!
     try {
       const payloadMessages = chatBoxs.map((chatBox) => {
@@ -59,20 +60,20 @@ function ChatForm() {
             ? [
                 {
                   text: chatBox.text,
-                  type: 'text'
+                  type: 'text',
                 },
                 {
                   type: 'image_url',
-                  image_url: { url: chatBox.base64String }
-                }
+                  image_url: { url: chatBox.base64String },
+                },
               ]
-            : chatBox.text
+            : chatBox.text,
         } as ChatCompletionMessageParam
       })
       if (systemText)
         payloadMessages.unshift({ role: 'system', content: systemText })
       apiResponse = await chatgpt.nextText(
-        payloadMessages,
+        payloadMessages as AIMessage[],
         aChatBox,
         updateChatBox,
         jb
@@ -166,25 +167,6 @@ function RecordingSection() {
   return (
     <div class="recording d-flex justify-content-center align-items-center my-4 gap-4">
       <audio id="audioPlayback" controls class="d-none"></audio>
-    </div>
-  )
-}
-function AddMessageButton() {
-  const { addChatBox } = useChatBox()
-
-  return (
-    <div class="mb-3 p-0 d-flex align-items-center gap-2 justify-content-between">
-      <button
-        class="btn btn-dark btn-sm"
-        type="button"
-        title="Add new message"
-        id="add-message"
-        onClick={(e) => {
-          addChatBox({})
-        }}
-      >
-        <span className="fas fa-plus" /> Add message
-      </button>
     </div>
   )
 }

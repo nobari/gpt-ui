@@ -30,6 +30,7 @@ const RAW_RUNTIME_STATE =
           ["@babel/core", "npm:7.25.2"],\
           ["@babel/plugin-transform-react-jsx-development", "virtual:b6399fb35d8c14e5f7b0df03bfb58ca82645e1f114f2e91f8a3d95e75a7a878275fb750554a0147d6933af8eecd796b3242324f9c6965b8f178e4c43e8c6c615#npm:7.24.7"],\
           ["@fortawesome/fontawesome-free", "npm:6.6.0"],\
+          ["@google/generative-ai", "npm:0.21.0"],\
           ["@popperjs/core", "npm:2.11.8"],\
           ["@preact/preset-vite", "virtual:b6399fb35d8c14e5f7b0df03bfb58ca82645e1f114f2e91f8a3d95e75a7a878275fb750554a0147d6933af8eecd796b3242324f9c6965b8f178e4c43e8c6c615#npm:2.9.1"],\
           ["@types/autosize", "npm:4.0.3"],\
@@ -604,6 +605,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../.yarn/berry/cache/@fortawesome-fontawesome-free-npm-6.6.0-fa479c2269-10c0.zip/node_modules/@fortawesome/fontawesome-free/",\
         "packageDependencies": [\
           ["@fortawesome/fontawesome-free", "npm:6.6.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@google/generative-ai", [\
+      ["npm:0.21.0", {\
+        "packageLocation": "../../../.yarn/berry/cache/@google-generative-ai-npm-0.21.0-4b1f39d77c-10c0.zip/node_modules/@google/generative-ai/",\
+        "packageDependencies": [\
+          ["@google/generative-ai", "npm:0.21.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -1840,6 +1850,7 @@ const RAW_RUNTIME_STATE =
           ["@babel/core", "npm:7.25.2"],\
           ["@babel/plugin-transform-react-jsx-development", "virtual:b6399fb35d8c14e5f7b0df03bfb58ca82645e1f114f2e91f8a3d95e75a7a878275fb750554a0147d6933af8eecd796b3242324f9c6965b8f178e4c43e8c6c615#npm:7.24.7"],\
           ["@fortawesome/fontawesome-free", "npm:6.6.0"],\
+          ["@google/generative-ai", "npm:0.21.0"],\
           ["@popperjs/core", "npm:2.11.8"],\
           ["@preact/preset-vite", "virtual:b6399fb35d8c14e5f7b0df03bfb58ca82645e1f114f2e91f8a3d95e75a7a878275fb750554a0147d6933af8eecd796b3242324f9c6965b8f178e4c43e8c6c615#npm:2.9.1"],\
           ["@types/autosize", "npm:4.0.3"],\
