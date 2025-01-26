@@ -58,9 +58,8 @@ export const CONFIGS: {
     voice: 'echo',
   },
 } as const
-// AIzaSyBnF0VmW4UkzFQdhyLLO5jPvqebCKNlrjU
 const ENCODED_SEC =
-  'U2FsdGVkX1+VgEH/EJak4zIPZKfnH3Ll1lrIuj8I6j/kVWaQK3N8n3JsSwf2kIuth/IA8mCHaWPyiojQVxxZfBzj9sFH6NKb+nR13mAfWxnktDpUu4lR7RnSafzaIgljLOG2pQDE8VNX5ggS70e2S/D7brlXEfijHTXo7QXh+M02zxPbeL2g/xsMMToyXv8Di59q2oUaw6Bf7GZmJ5OCoqcDpz1Q5i/bt3YG0uuSHnUk9kykaPAVW/6EYxcjwf1tO2C0Y7k4ZIj5htDeFgJX0QggSWJ7fH29efj7+bMJ94vKcMX+fgJoAkYMk3/OfEDJtW+Y43qL/jJIVGndtpRdJqklwZbfiEJ/ytDCirYDNNt3/0sKv8EIx3xUGRq/yGrnijWsgOyJZxbzaQ5W1IKORw=='
+  'U2FsdGVkX1/A/TxPicVzO9wwu2P+HW9UPkc49gtiEI056I3FRDYTaFUqbCFPJLTiZhYWMWlTdbRikF5Oh878hRtWTe3o4iBXA9OzcD2hj0QGKnIIgCs1ebmvPFSXM7O9ruwmr5Is64/SkEFOdNQNWkt4JgxXuV3Yrt2pMdKqEUINifm29pDqmX/BMHYS2/sAhJhbdZZnIH8BKn1Uoq3vLO4LaAXDU0QbVsvvGe080SYr+Pti4vSo9BfZBB/nUN4f2smRAEIUjyvManV2K1NEqeUAyN7c6MZAjSxSvm2sszk8YOvFKTVYE3zS8XQs7jsqWQnA/w14ke+RFMxdNfGi7NqO5FtmLx7kfFIhPjI7LbPbsQHVFUahdlruqWGB7G2sFKwwRsZOJ+tGIXLe/ouBXQ=='
 
 //to update/add keys use this function. It returns the new encrypted string for ENCODED_SEC.
 function changeSec(key: string, newObj: any) {
@@ -74,6 +73,11 @@ function changeSec(key: string, newObj: any) {
   console.log('new ENCODED_SEC:' + enc)
   return enc
 }
+
+console.log(
+  'boz:',
+  changeSec('1368', { gemini: 'AIzaSyCs06r0puv0FHfwwgE-IgVgXTffOhsU1j8' })
+)
 
 function wrongKey(preemptive: boolean = true) {
   if (preemptive) {
