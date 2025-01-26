@@ -4,7 +4,7 @@ import { useChatBox } from '../contexts/ChatBoxContext'
 import { transcribeTextFromImage } from '../utils/google'
 
 export function OCRButton({
-  setLoading
+  setLoading,
 }: {
   setLoading: (loading: boolean) => void
 }) {
@@ -19,7 +19,7 @@ export function OCRButton({
       if (file) {
         let text = ''
         if (file.type.startsWith('audio/')) {
-          text = await chatgpt.stt(file)
+          text = (await chatgpt.stt(file)) || ''
         } else if (file.type.startsWith('image/')) {
           text = await transcribeTextFromImage(file)
         }
@@ -27,8 +27,8 @@ export function OCRButton({
           chatbox: {
             previewing: true, //to avoid focusing or opening keyboard
             text,
-            role: 'user'
-          }
+            role: 'user',
+          },
         })
       }
     } catch (err) {

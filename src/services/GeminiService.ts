@@ -25,7 +25,7 @@ export class GeminiService extends AIService {
       let responseText = ''
 
       for await (const chunk of this.stream.stream) {
-        const text = chunk.text()
+        const text = chunk.text() ?? ''
         responseText += text
       }
 
@@ -51,7 +51,7 @@ export class GeminiService extends AIService {
       let responseText = ''
 
       for await (const chunk of this.stream.stream) {
-        const text = chunk.text()
+        const text = chunk.text() ?? ''
         console.log(text)
         responseText += text
         currentChatBox.text += text

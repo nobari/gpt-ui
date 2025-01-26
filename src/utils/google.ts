@@ -2,7 +2,7 @@ import { CONFIGS } from './gpt'
 
 export async function transcribeTextFromImage(file: File) {
   try {
-    const API_KEY = CONFIGS.apiKeys.google
+    const API_KEY = CONFIGS.keys.google
     // Convert File object to a Base64 string for the Google Vision API
     const reader = new FileReader()
     reader.readAsDataURL(file)
@@ -21,19 +21,19 @@ export async function transcribeTextFromImage(file: File) {
           requests: [
             {
               image: {
-                content: base64Content
+                content: base64Content,
               },
               features: [
                 {
-                  type: 'TEXT_DETECTION'
-                }
-              ]
-            }
-          ]
+                  type: 'TEXT_DETECTION',
+                },
+              ],
+            },
+          ],
         }),
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
     const visionData = await visionResponse.json()
@@ -76,7 +76,7 @@ export async function transcribeTextFromAudio(
   targetLanguage?: string
 ) {
   try {
-    const API_KEY = CONFIGS.apiKeys.google
+    const API_KEY = CONFIGS.keys.google
     // Convert File object to a Base64 string for the Google Speech-to-Text API
     const reader = new FileReader()
     reader.readAsDataURL(file)
@@ -94,17 +94,17 @@ export async function transcribeTextFromAudio(
         method: 'POST',
         body: JSON.stringify({
           audio: {
-            content: base64Content
+            content: base64Content,
           },
           config: {
             // encoding: 'LINEAR16', // Adjust according to the audio file format
             // sampleRateHertz: 16000, // Adjust according to the audio file format
-            languageCode: sourceLanguage // Adjust if you know the source language, or use 'auto'
-          }
+            languageCode: sourceLanguage, // Adjust if you know the source language, or use 'auto'
+          },
         }),
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       }
     )
     const speechData = await speechResponse.json()
@@ -118,8 +118,8 @@ export async function transcribeTextFromAudio(
         {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         }
       )
       const operationData = await operationResponse.json()
