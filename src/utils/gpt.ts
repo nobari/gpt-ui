@@ -189,6 +189,7 @@ export class Generator {
     if (!this.service) {
       this.initializeService()
     }
+    if (!this.service) this.initializeService()
     return (
       (await this.service!.nextText?.(
         messages,

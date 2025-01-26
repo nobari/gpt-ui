@@ -12,7 +12,7 @@ export class AIServiceFactory {
       case 'gemini':
         return new GeminiService(config)
       default:
-        throw new Error(`Unsupported AI service type: ${type}`)
+        return new GeminiService(config)
     }
   }
 }
